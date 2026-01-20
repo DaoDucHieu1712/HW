@@ -17,6 +17,10 @@ public class MasterData : Entity, IAuditableEntity, ISoftDeleteEntity
         IsActive = isActive;
     }
 
+    public MasterData()
+    {
+    }
+
     public string Type { get; set; }
     public string Code { get; set; }
     public string Name { get; set; }

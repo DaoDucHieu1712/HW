@@ -7,7 +7,7 @@ public static class BlogDtos
 
     public record BlogPagingAndFilterResponseDto(string? Search ,int PageIndex, int PageSize);
 
-    public record CreateBlogDtoRequest(string? Title, string? Content);
+    public record CreateBlogRequestDto(string? Title, string? Content);
 
-    public record UpdateBlogDtoRequest(string Id, string? Title, string? Content);
+    public record UpdateBlogRequestDto(string Id, string? Title, string? Content);
 }

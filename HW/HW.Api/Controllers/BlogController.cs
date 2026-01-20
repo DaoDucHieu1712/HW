@@ -23,14 +23,14 @@ namespace HW.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Add(CreateBlogDtoRequest blogDto)
+        public async Task<IActionResult> Add(CreateBlogRequestDto blogDto)
         {
             await _blogService.Insert(blogDto);
             return NoContent();
         }
 
         [HttpPost("add-range")]
-        public async Task<IActionResult> AddRange(List<CreateBlogDtoRequest> request)
+        public async Task<IActionResult> AddRange(List<CreateBlogRequestDto> request)
         {
             await _blogService.AddRange(request);
             return NoContent();

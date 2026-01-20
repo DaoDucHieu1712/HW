@@ -5,10 +5,10 @@ namespace HW.Application.Validators;
 
 public static class BlogValidator
 {
-    public class CreateBlogDtoRequestValidator
-        : AbstractValidator<BlogDtos.CreateBlogDtoRequest>
+    public class CreateBlogRequestDtoValidator
+        : AbstractValidator<BlogDtos.CreateBlogRequestDto>
     {
-        public CreateBlogDtoRequestValidator()
+        public CreateBlogRequestDtoValidator()
         {
             RuleFor(x => x.Title)
                .NotEmpty().WithMessage("Title is required")
@@ -20,10 +20,10 @@ public static class BlogValidator
         }
     }
 
-    public class UpdateBlogDtoRequestValidator
-        : AbstractValidator<BlogDtos.UpdateBlogDtoRequest>
+    public class UpdateBlogRequestDtoValidator
+        : AbstractValidator<BlogDtos.UpdateBlogRequestDto>
     {
-        public UpdateBlogDtoRequestValidator()
+        public UpdateBlogRequestDtoValidator()
         {
             RuleFor(x => x.Title)
                .NotEmpty().WithMessage("Title is required")

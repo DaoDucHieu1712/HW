@@ -14,9 +14,9 @@ public interface IBlogService
     Task<List<BlogResponseDto>> FindAll();
     Task<PagedResult<BlogResponseDto>> FindAllAndPaging(BlogPagingAndFilterResponseDto blogDto);
     Task<BlogResponseDto> FindById(string Id);
-    Task Insert(CreateBlogDtoRequest blogDto);
-    Task AddRange(List<CreateBlogDtoRequest> listdto);
-    Task Update(UpdateBlogDtoRequest blogDto);
+    Task Insert(CreateBlogRequestDto blogDto);
+    Task AddRange(List<CreateBlogRequestDto> listdto);
+    Task Update(UpdateBlogRequestDto blogDto);
     Task Remove(string Id);
 
 }
@@ -33,7 +33,7 @@ public class BlogService : IBlogService
         _uow = uow;
     }
 
-    public async Task AddRange(List<CreateBlogDtoRequest> listdto)
+    public async Task AddRange(List<CreateBlogRequestDto> listdto)
     {
         await _uow.ExecuteAsync(async () =>
         {
@@ -75,7 +75,7 @@ public class BlogService : IBlogService
 
     }
 
-    public async Task Insert(CreateBlogDtoRequest blogDto)
+    public async Task Insert(CreateBlogRequestDto blogDto)
     {
         await _uow.ExecuteAsync(async () =>
          {
@@ -94,7 +94,7 @@ public class BlogService : IBlogService
        
     }
 
-    public async Task Update(UpdateBlogDtoRequest blogDto)
+    public async Task Update(UpdateBlogRequestDto blogDto)
     {
         await _uow.ExecuteAsync(async () =>
         {
