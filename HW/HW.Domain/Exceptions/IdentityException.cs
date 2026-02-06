@@ -8,5 +8,5 @@ public static class IdentityException
             : base("Token Exception", message)
         {
         }
-    }
+    } 
 }

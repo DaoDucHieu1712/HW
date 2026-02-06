@@ -1,4 +1,5 @@
 ﻿using HW.Domain.Abstractions.Entities;
+using HW.Infrastructure.MultiTenant;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -7,6 +8,14 @@ namespace HW.Infrastructure.Interceptors;
 
 public class AuditableEntitiesInterceptor : SaveChangesInterceptor
 {
+
+    private readonly UserInfo userInfo;
+
+    public AuditableEntitiesInterceptor(UserInfo userInfo)
+    {
+        this.userInfo = userInfo;
+    }
+
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,

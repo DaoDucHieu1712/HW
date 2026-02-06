@@ -2,6 +2,7 @@
 using HW.Domain.Abstractions.Repositories;
 using HW.Domain.Entities;
 using HW.Infrastructure.Interceptors;
+using HW.Infrastructure.MultiTenant;
 using HW.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -72,6 +73,7 @@ public static class ServiceCollectionExtensions
 
     public static void AddInfrastructureServices(this IServiceCollection services)
     {
+        services.AddScoped<UserInfo>();
         services.AddScoped(typeof(IEFRepository<>), typeof(EFRepository<>));
         services.AddScoped<IUnitOfWork, EFUnitOfWork>();
     }

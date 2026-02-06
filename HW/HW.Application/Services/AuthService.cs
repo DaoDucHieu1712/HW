@@ -14,6 +14,7 @@ public interface IAuthService
 {
     Task Register(RegisterRequestDto dto);
     Task<LoginResponseDto> Login(LoginRequestDto dto);
+    Task<AppUser?> VerifyTokenAsync(string token);
 }
 
 public class AuthService : IAuthService
@@ -81,6 +82,54 @@ public class AuthService : IAuthService
         var refreshToken = GenerateRefreshToken();
 
         return new LoginResponseDto(user.UserName, accessToken, refreshToken, expiration);
+    }
+
+    public async Task<AppUser?> VerifyTokenAsync(string token)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+            return null;
+
+        try
+        {
+            var key = _configuration["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(key))
+                return null;
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                ValidateIssuer = !string.IsNullOrWhiteSpace(_configuration["Jwt:Issuer"]),
+                ValidIssuer = _configuration["Jwt:Issuer"],
+                ValidateAudience = !string.IsNullOrWhiteSpace(_configuration["Jwt:Audience"]),
+                ValidAudience = _configuration["Jwt:Audience"],
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.FromSeconds(30)
+            };
+
+            var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
+
+            if (validatedToken is not JwtSecurityToken jwtToken)
+                return null;
+
+            // Extract user ID from NameIdentifier claim
+            var userId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                return null;
+
+            // Resolve user from UserManager
+            var user = await _userManager.FindByIdAsync(userId);
+            return user;
+        }
+        catch (SecurityTokenException)
+        {
+            return null;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private string GenerateJwtToken(AppUser user, out DateTime expiration)

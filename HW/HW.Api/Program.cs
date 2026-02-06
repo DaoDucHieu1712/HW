@@ -2,7 +2,6 @@ using FluentValidation;
 using HW.Api.DI;
 using HW.Api.Middlewares;
 using HW.Application.DI;
-using HW.Domain.Entities;
 using HW.Infrastructure.DI;
 using static HW.Application.Validators.BlogValidator;
 using static HW.Infrastructure.DI.Options;
