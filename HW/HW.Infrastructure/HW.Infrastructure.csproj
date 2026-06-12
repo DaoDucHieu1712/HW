@@ -22,8 +22,4 @@
 	  <ProjectReference Include="..\HW.Domain\HW.Domain.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="QueryServices\" />
-	</ItemGroup>
-
 </Project>

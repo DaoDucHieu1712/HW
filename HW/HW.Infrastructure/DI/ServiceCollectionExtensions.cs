@@ -1,8 +1,7 @@
-﻿using HW.Domain.Abstractions;
+using HW.Domain.Abstractions;
 using HW.Domain.Abstractions.Repositories;
 using HW.Domain.Entities;
 using HW.Infrastructure.Interceptors;
-using HW.Infrastructure.MultiTenant;
 using HW.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,18 +14,17 @@ namespace HW.Infrastructure.DI;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddMariaDbConfiguration(this IServiceCollection services, IConfiguration configuration)
+    public static void AddMariaDbConfiguration(this IServiceCollection services, IConfiguration configuration, bool isDevelopment)
     {
         services.AddDbContext<ApplicationDbContext>((provider, builder) =>
         {
             var connectionString = configuration.GetConnectionString("DefaultConnection");
             var auditableInterceptor = provider.GetService<AuditableEntitiesInterceptor>();
-
             var options = provider.GetRequiredService<IOptionsMonitor<MariaDbRetryOptions>>();
 
             builder
-               .EnableDetailedErrors(true)
-               .EnableSensitiveDataLogging(true)
+               .EnableDetailedErrors(isDevelopment)
+               .EnableSensitiveDataLogging(isDevelopment)
                .UseLazyLoadingProxies(true)
                .UseMySql(
                     connectionString: connectionString,
@@ -39,43 +37,40 @@ public static class ServiceCollectionExtensions
                                     maxRetryDelay: options.CurrentValue.MaxRetryDelay,
                                     errorNumbersToAdd: options.CurrentValue.ErrorNumbersToAdd))
                             .MigrationsAssembly(typeof(ApplicationDbContext).Assembly.GetName().Name))
-            .AddInterceptors(auditableInterceptor);
+               .AddInterceptors(auditableInterceptor);
+
         }).AddIdentity<AppUser, AppRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
         services.Configure<IdentityOptions>(options =>
         {
-            // Thiết lập về Password
-            options.Password.RequireDigit = false; // Không bắt phải có số
-            options.Password.RequireLowercase = false; // Không bắt phải có chữ thường
-            options.Password.RequireNonAlphanumeric = false; // Không bắt ký tự đặc biệt
-            options.Password.RequireUppercase = false; // Không bắt buộc chữ in
-            options.Password.RequiredLength = 3; // Số ký tự tối thiểu của password
-            options.Password.RequiredUniqueChars = 1; // Số ký tự riêng biệt
+            options.Password.RequireDigit = false;
+            options.Password.RequireLowercase = false;
+            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireUppercase = false;
+            options.Password.RequiredLength = 3;
+            options.Password.RequiredUniqueChars = 1;
 
-            // Cấu hình Lockout - khóa user
-            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(0); // Khóa 5 phút
-            options.Lockout.MaxFailedAccessAttempts = 10000; // Thất bại 5 lầ thì khóa
+            options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+            options.Lockout.MaxFailedAccessAttempts = 5;
             options.Lockout.AllowedForNewUsers = true;
 
-            // Cấu hình về User.
-            options.User.AllowedUserNameCharacters = // các ký tự đặt tên user
+            options.User.AllowedUserNameCharacters =
                 "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-            options.User.RequireUniqueEmail = true;  // Email là duy nhất
+            options.User.RequireUniqueEmail = true;
 
-            // Cấu hình đăng nhập.
-            options.SignIn.RequireConfirmedEmail = true;            // Cấu hình xác thực địa chỉ email (email phải tồn tại)
-            options.SignIn.RequireConfirmedPhoneNumber = false;     // Xác thực số điện thoại
+            options.SignIn.RequireConfirmedEmail = true;
+            options.SignIn.RequireConfirmedPhoneNumber = false;
         });
-
     }
 
     public static void AddInfrastructureServices(this IServiceCollection services)
     {
-        services.AddScoped<UserInfo>();
+        services.AddHttpContextAccessor();
         services.AddScoped(typeof(IEFRepository<>), typeof(EFRepository<>));
         services.AddScoped<IUnitOfWork, EFUnitOfWork>();
+        services.AddHostedService<Outbox.OutboxMessageProcessor>();
     }
 
     public static void AddInterceptorDbContext(this IServiceCollection services)
@@ -84,9 +79,9 @@ public static class ServiceCollectionExtensions
     }
 
     public static OptionsBuilder<MariaDbRetryOptions> ConfigureMariaDbRetryOptions(this IServiceCollection services, IConfigurationSection section)
-            => services
-                .AddOptions<MariaDbRetryOptions>()
-                .Bind(section)
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
+        => services
+            .AddOptions<MariaDbRetryOptions>()
+            .Bind(section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 }

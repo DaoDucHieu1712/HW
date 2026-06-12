@@ -102,6 +102,7 @@ namespace HW.Infrastructure.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
@@ -114,7 +115,9 @@ namespace HW.Infrastructure.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Title")
-                        .HasColumnType("longtext");
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<DateTimeOffset?>("UpdatedAt")
                         .HasColumnType("datetime(6)");
@@ -174,6 +177,94 @@ namespace HW.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("MasterDatas");
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTimeOffset?>("NextRetryAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTimeOffset>("OccurredOnUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTimeOffset?>("ProcessedOnUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OutboxMessages");
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.Vocab", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Example")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<bool?>("IsDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<DateTimeOffset?>("LastReviewedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Meaning")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTimeOffset?>("NextReviewAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<DateTimeOffset>("NotedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("ReviewStage")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Word")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Vocabs");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

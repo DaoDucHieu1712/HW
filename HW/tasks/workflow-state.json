@@ -1,0 +1,20 @@
+{
+  "taskId": "",
+  "taskTitle": "",
+  "startedAt": "",
+  "status": "idle",
+  "steps": {
+    "read":    { "status": "pending", "completedAt": "", "summary": "" },
+    "analyze": { "status": "pending", "completedAt": "", "summary": "" },
+    "code":    { "status": "pending", "completedAt": "", "summary": "" },
+    "test":    { "status": "pending", "completedAt": "", "summary": "" },
+    "report":  { "status": "pending", "completedAt": "", "summary": "" },
+    "apply":   { "status": "pending", "completedAt": "", "summary": "" }
+  },
+  "outputs": {
+    "analysis":    "tasks/outputs/analysis.md",
+    "codeChanges": "tasks/outputs/code-changes.md",
+    "testResults": "tasks/outputs/test-results.md",
+    "report":      "tasks/outputs/report.md"
+  }
+}

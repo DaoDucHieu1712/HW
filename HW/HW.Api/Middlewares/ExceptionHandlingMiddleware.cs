@@ -35,8 +35,14 @@ public class ExceptionHandlingMiddleware
 
         ApiResponse<object> response;
 
-        // Handle domain exceptions
-        if (ex is DomainException domainEx)
+        // Handle not-found domain exceptions (must come before DomainException)
+        if (ex is NotFoundException notFoundEx)
+        {
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+            response = ApiResponseFactory.NotFound<object>(notFoundEx.Message);
+        }
+        // Handle other domain exceptions
+        else if (ex is DomainException domainEx)
         {
             context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
             response = ApiResponseFactory.Error<object>(

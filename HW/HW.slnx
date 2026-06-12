@@ -4,6 +4,7 @@
   </Folder>
   <Project Path="HW.Api/HW.Api.csproj" />
   <Project Path="HW.Application/HW.Application.csproj" />
+  <Project Path="HW.CS/HW.CS.csproj" Id="3409024a-69e5-482b-b40c-d8d75345e98e" />
   <Project Path="HW.Domain/HW.Domain.csproj" />
   <Project Path="HW.Infrastructure/HW.Infrastructure.csproj" />
 </Solution>

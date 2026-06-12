@@ -1,10 +1,11 @@
-﻿namespace HW.Domain.Abstractions.Entities
+namespace HW.Domain.Abstractions.Entities;
+
+public abstract class Entity
 {
-    public class Entity
+    protected Entity()
     {
-        protected Entity() {
-            Id = Guid.NewGuid().ToString();
-        }
-        public string Id { get; set; } 
+        Id = Guid.NewGuid().ToString();
     }
+
+    public string Id { get; set; }
 }
