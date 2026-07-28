@@ -1,12 +1,14 @@
-﻿using HW.Domain.Abstractions.Entities;
+using HW.Domain.Abstractions.Entities;
 using System.Linq.Expressions;
 
 namespace HW.Domain.Abstractions.Repositories;
 
-public interface IEFRepository<TEntity>
+public interface IRepository<TEntity>
         where TEntity : Entity
 {
     IQueryable<TEntity> FindAll(Expression<Func<TEntity, bool>>? predicate = null, params Expression<Func<TEntity, object>>[] includeProperties);
+
+    IQueryable<TEntity> FindAllIgnoreFilters(Expression<Func<TEntity, bool>>? predicate = null, params Expression<Func<TEntity, object>>[] includeProperties);
 
     Task<TEntity> FindByIdAsync(string Id, CancellationToken cancellationToken = default, params Expression<Func<TEntity, object>>[] includeProperties);
 

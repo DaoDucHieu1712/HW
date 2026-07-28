@@ -19,9 +19,9 @@ public class DeleteBlogCommandValidator : AbstractValidator<DeleteBlogCommand>
 
 public class DeleteBlogCommandHandler : ICommandHandler<DeleteBlogCommand>
 {
-    private readonly IEFRepository<Blog> _repository;
+    private readonly IRepository<Blog> _repository;
 
-    public DeleteBlogCommandHandler(IEFRepository<Blog> repository)
+    public DeleteBlogCommandHandler(IRepository<Blog> repository)
         => _repository = repository;
 
     public async Task<Unit> Handle(DeleteBlogCommand request, CancellationToken ct)

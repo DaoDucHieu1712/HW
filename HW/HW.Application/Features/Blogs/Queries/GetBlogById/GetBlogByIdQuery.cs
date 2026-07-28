@@ -11,9 +11,9 @@ public record GetBlogByIdQuery(string Id) : IQuery<BlogResponseDto>;
 
 public class GetBlogByIdQueryHandler : IQueryHandler<GetBlogByIdQuery, BlogResponseDto>
 {
-    private readonly IEFRepository<Blog> _repository;
+    private readonly IRepository<Blog> _repository;
 
-    public GetBlogByIdQueryHandler(IEFRepository<Blog> repository)
+    public GetBlogByIdQueryHandler(IRepository<Blog> repository)
         => _repository = repository;
 
     public async Task<BlogResponseDto> Handle(GetBlogByIdQuery request, CancellationToken ct)

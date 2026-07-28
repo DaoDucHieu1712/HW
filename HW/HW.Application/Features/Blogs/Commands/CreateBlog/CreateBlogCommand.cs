@@ -20,9 +20,9 @@ public class CreateBlogCommandValidator : AbstractValidator<CreateBlogCommand>
 
 public class CreateBlogCommandHandler : ICommandHandler<CreateBlogCommand>
 {
-    private readonly IEFRepository<Blog> _repository;
+    private readonly IRepository<Blog> _repository;
 
-    public CreateBlogCommandHandler(IEFRepository<Blog> repository)
+    public CreateBlogCommandHandler(IRepository<Blog> repository)
         => _repository = repository;
 
     public Task<Unit> Handle(CreateBlogCommand request, CancellationToken ct)

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(claude-api)",
+      "Bash(dotnet build *)",
+      "Bash(docker version *)",
+      "PowerShell($paths = @\\(\"$env:ProgramFiles\\\\Docker\\\\Docker\\\\resources\\\\bin\\\\docker.exe\", \"$env:ProgramFiles\\\\Docker\\\\Docker\\\\Docker Desktop.exe\"\\); foreach \\($p in $paths\\) { if \\(Test-Path $p\\) { \"FOUND: $p\" } }; \"--- podman/rancher ---\"; foreach \\($c in @\\('docker','podman','nerdctl'\\)\\) { $g = Get-Command $c -ErrorAction SilentlyContinue; if \\($g\\) { \"$c -> $\\($g.Source\\)\" } }; \"--- wsl ---\"; wsl -l -q 2>$null)",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development Messaging__Provider=RabbitMq Messaging__RabbitMq__HostName=localhost timeout 45 dotnet run --project HW.Api/HW.Api.csproj --no-launch-profile -v q --nologo)",
+      "Bash(grep -viE \"warning \\(CS|NU\\)|^\\\\s*$\")",
+      "Bash(sed -i 's/^using Microsoft.Extensions.Logging;/using Microsoft.Extensions.Hosting;\\\\nusing Microsoft.Extensions.Logging;/' C:/Users/63200784/AppData/Local/Temp/claude/C--Code-IP-HW-HW/978ae55d-5b84-480e-92a8-ab83817605f9/scratchpad/MessagingVerify/Program.cs)",
+      "Bash(dotnet run *)",
+      "Bash(git -C \"C:/Code/IP/HW/HW\" status --porcelain)"
+    ]
+  }
+}

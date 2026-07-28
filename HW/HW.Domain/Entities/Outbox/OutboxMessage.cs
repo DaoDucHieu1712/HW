@@ -8,7 +8,14 @@ public class OutboxMessage
     }
 
     public string Id { get; set; }
+
+    /// <summary>
+    /// Assembly-qualified name of the payload. Also decides where the row is delivered: an
+    /// <c>IDomainEvent</c> goes to MediatR, a <c>[Message]</c> contract goes to the broker. See
+    /// <c>OutboxMessageProcessor.RouteFor</c>.
+    /// </summary>
     public string Type { get; set; } = string.Empty;
+
     public string Content { get; set; } = string.Empty;
     public DateTimeOffset OccurredOnUtc { get; set; }
     public DateTimeOffset? ProcessedOnUtc { get; set; }

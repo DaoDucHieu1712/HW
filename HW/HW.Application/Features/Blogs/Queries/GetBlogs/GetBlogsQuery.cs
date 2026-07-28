@@ -11,9 +11,9 @@ public record GetBlogsQuery(string? Search, int PageIndex, int PageSize) : IQuer
 
 public class GetBlogsQueryHandler : IQueryHandler<GetBlogsQuery, PagedResult<BlogResponseDto>>
 {
-    private readonly IEFRepository<Blog> _repository;
+    private readonly IRepository<Blog> _repository;
 
-    public GetBlogsQueryHandler(IEFRepository<Blog> repository)
+    public GetBlogsQueryHandler(IRepository<Blog> repository)
         => _repository = repository;
 
     public async Task<PagedResult<BlogResponseDto>> Handle(GetBlogsQuery request, CancellationToken ct)

@@ -21,9 +21,9 @@ public class UpdateBlogCommandValidator : AbstractValidator<UpdateBlogCommand>
 
 public class UpdateBlogCommandHandler : ICommandHandler<UpdateBlogCommand>
 {
-    private readonly IEFRepository<Blog> _repository;
+    private readonly IRepository<Blog> _repository;
 
-    public UpdateBlogCommandHandler(IEFRepository<Blog> repository)
+    public UpdateBlogCommandHandler(IRepository<Blog> repository)
         => _repository = repository;
 
     public async Task<Unit> Handle(UpdateBlogCommand request, CancellationToken ct)

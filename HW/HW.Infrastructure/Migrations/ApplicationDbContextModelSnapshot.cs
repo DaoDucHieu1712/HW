@@ -130,6 +130,44 @@ namespace HW.Infrastructure.Migrations
                     b.ToTable("Blogs");
                 });
 
+            modelBuilder.Entity("HW.Domain.Entities.Folder", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Icon")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool?>("IsDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("ParentId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Folders");
+                });
+
             modelBuilder.Entity("HW.Domain.Entities.MasterData", b =>
                 {
                     b.Property<string>("Id")
@@ -179,6 +217,57 @@ namespace HW.Infrastructure.Migrations
                     b.ToTable("MasterDatas");
                 });
 
+            modelBuilder.Entity("HW.Domain.Entities.Note", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("FolderId")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("longtext");
+
+                    b.Property<bool?>("IsDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Tag")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FolderId");
+
+                    b.ToTable("Notes");
+                });
+
             modelBuilder.Entity("HW.Domain.Entities.Outbox.OutboxMessage", b =>
                 {
                     b.Property<string>("Id")
@@ -213,10 +302,133 @@ namespace HW.Infrastructure.Migrations
                     b.ToTable("OutboxMessages");
                 });
 
-            modelBuilder.Entity("HW.Domain.Entities.Vocab", b =>
+            modelBuilder.Entity("HW.Domain.Entities.Sagas.SagaEventRecord", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
+
+                    b.Property<string>("CausationMessageId")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTimeOffset>("OccurredOnUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("SagaId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("SagaType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SagaId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("SagaEvents");
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.Sagas.SagaInboxEntry", b =>
+                {
+                    b.Property<string>("MessageId")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTimeOffset>("HandledAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("SagaId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.HasKey("MessageId");
+
+                    b.HasIndex("SagaId");
+
+                    b.ToTable("SagaInbox");
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.Sagas.SagaInstance", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("CurrentStep")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<DateTimeOffset?>("FinishedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("SagaType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<DateTimeOffset>("UpdatedAtUtc")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long>("Version")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SagaType", "Status");
+
+                    b.ToTable("SagaInstances");
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.UserFitnessProfile", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ActivityLevel")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("Allergies")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("AvailableDaysPerWeek")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AvailableEquipment")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<DateTimeOffset?>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -224,9 +436,55 @@ namespace HW.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Example")
-                        .HasMaxLength(1000)
-                        .HasColumnType("varchar(1000)");
+                    b.Property<string>("DietaryPreference")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("FitnessLevel")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<string>("Goal")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("varchar(30)");
+
+                    b.Property<string>("InjuriesOrLimitations")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool?>("IsDelete")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("MealsPerDay")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("UserFitnessProfiles");
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.Vocab", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTimeOffset?>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("longtext");
 
                     b.Property<bool?>("IsDelete")
                         .HasColumnType("tinyint(1)");
@@ -234,16 +492,8 @@ namespace HW.Infrastructure.Migrations
                     b.Property<DateTimeOffset?>("LastReviewedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Meaning")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
-
                     b.Property<DateTimeOffset?>("NextReviewAt")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(500)
-                        .HasColumnType("varchar(500)");
 
                     b.Property<DateTimeOffset>("NotedAt")
                         .HasColumnType("datetime(6)");
@@ -399,6 +649,65 @@ namespace HW.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("HW.Domain.Entities.Folder", b =>
+                {
+                    b.HasOne("HW.Domain.Entities.Folder", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.Note", b =>
+                {
+                    b.HasOne("HW.Domain.Entities.Folder", "Folder")
+                        .WithMany("Notes")
+                        .HasForeignKey("FolderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Folder");
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.UserFitnessProfile", b =>
+                {
+                    b.OwnsOne("HW.Domain.ValueObjects.PersonalInfo", "PersonalInfo", b1 =>
+                        {
+                            b1.Property<string>("UserFitnessProfileId")
+                                .HasColumnType("varchar(255)");
+
+                            b1.Property<int>("Age")
+                                .HasColumnType("int")
+                                .HasColumnName("Age");
+
+                            b1.Property<string>("Gender")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("varchar(20)")
+                                .HasColumnName("Gender");
+
+                            b1.Property<decimal>("HeightCm")
+                                .HasPrecision(5, 2)
+                                .HasColumnType("decimal(5,2)")
+                                .HasColumnName("HeightCm");
+
+                            b1.Property<decimal>("WeightKg")
+                                .HasPrecision(5, 2)
+                                .HasColumnType("decimal(5,2)")
+                                .HasColumnName("WeightKg");
+
+                            b1.HasKey("UserFitnessProfileId");
+
+                            b1.ToTable("UserFitnessProfiles");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UserFitnessProfileId");
+                        });
+
+                    b.Navigation("PersonalInfo")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -448,6 +757,13 @@ namespace HW.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HW.Domain.Entities.Folder", b =>
+                {
+                    b.Navigation("Children");
+
+                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,7 +7,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Anthropic" Version="12.29.1" />
+		<PackageReference Include="Confluent.Kafka" Version="2.15.0" />
+		<PackageReference Include="MassTransit.RabbitMQ" Version="9.1.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.13" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+		<PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
+		<PackageReference Include="StackExchange.Redis" Version="2.8.16" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.13" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />

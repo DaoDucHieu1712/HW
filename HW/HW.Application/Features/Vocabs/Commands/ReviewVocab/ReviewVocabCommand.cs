@@ -19,9 +19,9 @@ public class ReviewVocabCommandValidator : AbstractValidator<ReviewVocabCommand>
 
 public class ReviewVocabCommandHandler : ICommandHandler<ReviewVocabCommand>
 {
-    private readonly IEFRepository<Vocab> _repository;
+    private readonly IRepository<Vocab> _repository;
 
-    public ReviewVocabCommandHandler(IEFRepository<Vocab> repository)
+    public ReviewVocabCommandHandler(IRepository<Vocab> repository)
         => _repository = repository;
 
     public async Task<Unit> Handle(ReviewVocabCommand request, CancellationToken ct)

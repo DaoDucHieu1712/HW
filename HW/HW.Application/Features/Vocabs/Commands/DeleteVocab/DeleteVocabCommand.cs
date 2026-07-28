@@ -19,9 +19,9 @@ public class DeleteVocabCommandValidator : AbstractValidator<DeleteVocabCommand>
 
 public class DeleteVocabCommandHandler : ICommandHandler<DeleteVocabCommand>
 {
-    private readonly IEFRepository<Vocab> _repository;
+    private readonly IRepository<Vocab> _repository;
 
-    public DeleteVocabCommandHandler(IEFRepository<Vocab> repository)
+    public DeleteVocabCommandHandler(IRepository<Vocab> repository)
         => _repository = repository;
 
     public async Task<Unit> Handle(DeleteVocabCommand request, CancellationToken ct)

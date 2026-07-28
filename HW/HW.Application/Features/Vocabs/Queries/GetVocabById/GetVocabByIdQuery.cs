@@ -11,9 +11,9 @@ public record GetVocabByIdQuery(string Id) : IQuery<VocabDtos.VocabResponseDto>;
 
 public class GetVocabByIdQueryHandler : IQueryHandler<GetVocabByIdQuery, VocabDtos.VocabResponseDto>
 {
-    private readonly IEFRepository<Vocab> _repository;
+    private readonly IRepository<Vocab> _repository;
 
-    public GetVocabByIdQueryHandler(IEFRepository<Vocab> repository)
+    public GetVocabByIdQueryHandler(IRepository<Vocab> repository)
         => _repository = repository;
 
     public async Task<VocabDtos.VocabResponseDto> Handle(GetVocabByIdQuery request, CancellationToken ct)

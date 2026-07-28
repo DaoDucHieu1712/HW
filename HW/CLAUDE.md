@@ -22,6 +22,9 @@ HW.Api/             → controllers (ISender), middleware, DI wiring, Program.cs
 - **No `_uow` in command handlers.** `TransactionBehavior` wraps all `IBaseCommand` automatically via `ExecuteAsync()`.
 - **DTOs are records.** Located in `HW.Application/Features/{Feature}s/Dtos/`.
 - **Validators co-located.** Each validator lives in the same file as its command/query.
+- **No broker types outside `Messaging/{RabbitMq,Kafka,MassTransitAdapter}`.** Publish via `IMessageBus`, consume via `IMessageHandler<T>`; the provider is a config value (`None`/`RabbitMq`/`Kafka`/`MassTransit`). Message contracts carry `[Message("topic")]` and handlers must be idempotent — delivery is at-least-once. MassTransit v9 needs a licence key or it throws at startup. See pattern 09.
+- **Sagas own distributed workflows.** An orchestrator is an `EventSourcedSaga` — state is its event stream, never a row. `Apply()` is a pure fold (no clock, no ids, no `Send`); decision methods guard on the current step and are the only place `Raise`/`Send` happen. Reply handlers derive `SagaMessageHandler<TSaga,TMessage>`, which is the **one** sanctioned use of `IUnitOfWork.ExecuteAsync` outside `TransactionBehavior` (a message handler is not a MediatR request). Never delete or rename an `ISagaEvent` type — streams are replayed forever. See pattern 10.
+- **Publish from command handlers only.** `Messaging:UseOutbox` is on by default, so `PublishAsync` enlists the message in the ambient transaction and returns before it is sent (delivery lag ≤ ~10s). A publish from a path that never calls `SaveChanges` is silently discarded. Outbox rows route by payload type: `IDomainEvent` → MediatR, `[Message]` → broker.
 
 ## Key types (exact signatures)
 ```csharp
@@ -133,6 +136,8 @@ Note: No `FluentValidationMiddleware` — validation runs inside the MediatR pip
 - `.claude/patterns/06-partial-update.md` — nullable fields in command, null-check per field in entity.Update()
 - `.claude/patterns/07-pagination.md` — PagedResult.CreateAsync, filter→sort→page order, Mapster PagedResult mapping
 - `.claude/patterns/08-jwt-auth.md` — token claims, login/register flow, VerifyTokenAsync, [Authorize] usage
+- `.claude/patterns/09-message-bus.md` — IMessageBus + IMessageHandler, RabbitMQ/Kafka adapters chosen by config, [Message] topics, retry/DLQ, at-least-once
+- `.claude/patterns/10-saga-event-sourcing.md` — orchestration saga with an event-sourced orchestrator, compensation, event store + projection, inbox dedup, version concurrency
 
 ## Guidelines (read before writing any code)
 - `.claude/guidelines/coding-style.md` — naming, async, null handling, expression bodies, string conventions
