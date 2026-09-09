@@ -22,6 +22,86 @@
 
 ---
 
+## 🔬 Track "Deep Understand" — Internals (file 11–14)
+
+> Track 1–10 trả lời **"cái gì / khi nào dùng"** (đủ cho vòng Middle).
+> Track 11–14 trả lời **"tồn tại để giải quyết vấn đề gì → bên dưới chạy ra sao → hệ quả đo được"**
+> — đây là phần phân biệt Middle với Middle+/Senior, và là phần interviewer "khoan" sâu nhất.
+
+| # | Chủ đề | File | Số câu |
+|---|--------|------|--------|
+| 11 | **Runtime Internals** — IL & metadata, MethodTable, dispatch, JIT/Tiering/PGO, AOT, generic sharing, boxing ở mức IL, `ref`/byref safety, reflection vs source generator | [interview.NET.11-Runtime-Internals.md](interview.NET.11-Runtime-Internals.md) | 22 |
+| 12 | **Memory & GC Internals** — bố cục bộ nhớ, bump-pointer alloc, gen 0/1/2, các pha GC, roots, card table & write barrier, LOH/POH, finalization, leak & chẩn đoán, `Span`/pooling | [interview.NET.12-Memory-GC-Internals.md](interview.NET.12-Memory-GC-Internals.md) | 20 |
+| 13 | **Async & Threading Internals** — IOCP/epoll, state machine, awaitable pattern, `ExecutionContext` vs `SynchronizationContext`, ThreadPool & starvation, `ValueTask`, memory model, lock internals, false sharing | [interview.NET.13-Async-Threading-Internals.md](interview.NET.13-Async-Threading-Internals.md) | 22 |
+| 14 | **Framework Internals** — Host, DI engine, middleware fold, Kestrel & Pipelines, routing, MVC filter, Options, HttpClientFactory, EF Core query/change tracker/SaveChanges, MediatR chain, STJ, end-to-end request | [interview.NET.14-Framework-Internals.md](interview.NET.14-Framework-Internals.md) | 21 |
+
+**Cộng thêm: ~85 câu internals.** Mỗi câu theo khung
+**❓ Vấn đề gốc → ⚙️ Cơ chế bên dưới → 💻 Code/đo đạc → ⚖️ Hệ quả thực chiến**.
+
+
+---
+
+## ⚡ Track "Scale & Load" — hệ thống lớn & chịu tải (file 15–19)
+
+> Track 11–14 hỏi **"bên trong 1 process chạy ra sao"**.
+> Track 15–19 hỏi **"khi có 10.000 req/s và 8 instance thì hỏng ở đâu, vì sao, sửa bằng cơ chế nào"**
+> — đây là phần quyết định vòng Senior / System Design.
+
+| # | Chủ đề | File | Số câu |
+|---|--------|------|--------|
+| 15 | **Concurrency & Scaling** — Little's Law, USL, lost update, pessimistic/optimistic lock, distributed lock & fencing token, idempotency key, rate limiting, backpressure & load shedding, cạn pool, hot key, Polly resilience, leader election, graceful shutdown, đo tải đúng cách | [interview.NET.15-Concurrency-Scaling.md](interview.NET.15-Concurrency-Scaling.md) | 22 |
+| 16 | **Transaction & Consistency** — ACID bên dưới (undo/redo/WAL), isolation & write skew, MVCC, gap lock & deadlock, ranh giới transaction, dual write, Outbox/CDC, 2PC vs Saga, exactly-once & Inbox, event sourcing, PACELC, read replica, xử lý tiền | [interview.NET.16-Transaction-Consistency.md](interview.NET.16-Transaction-Consistency.md) | 20 |
+| 17 | **Caching** — toán hit ratio, cache-aside/write-through, thứ tự invalidation, stampede & singleflight, penetration/breakdown/avalanche, `IMemoryCache`, `HybridCache`, Redis internals & cấu trúc dữ liệu, HTTP caching/CDN, precomputation | [interview.NET.17-Caching-Performance.md](interview.NET.17-Caching-Performance.md) | 16 |
+| 18 | **Messaging** — Queue vs Log, RabbitMQ (exchange/prefetch/ack/DLX), Kafka (partition/offset/ISR/rebalance), delivery semantics, thứ tự, retry & DLQ, consumer lag, schema evolution, saga event-sourced, observability, chọn broker | [interview.NET.18-Messaging-Scaling.md](interview.NET.18-Messaging-Scaling.md) | 15 |
+| 19 | **Case study system design** — khung trả lời 6 bước, số liệu ước lượng, flash sale, đặt vé, thanh toán, news feed, sync Elasticsearch, đếm thời gian thực, áp dụng vào project HW, bảng tra nhanh | [interview.NET.19-System-Design-Cases.md](interview.NET.19-System-Design-Cases.md) | 7 case |
+
+**Cộng thêm: ~80 câu + 7 case study.** Cùng khung
+**❓ Vấn đề gốc → ⚙️ Cơ chế bên dưới → 💻 Code/đo đạc → ⚖️ Hệ quả thực chiến**.
+
+### 🧭 Lộ trình học đề xuất
+```
+Tuần 1  file 01 + 02        →  nền tảng ngôn ngữ & async (biết "cái gì")
+Tuần 2  file 11 + 12        →  runtime + memory (hiểu "vì sao & bên dưới")
+Tuần 3  file 13             →  async/threading internals (phần hay bị hỏi khoan nhất)
+Tuần 4  file 05 + 08 + 14   →  framework: ASP.NET Core + EF Core + internals
+Tuần 5  file 03/04/06/07/09/10 →  quét phần còn lại + FW-21 (kể end-to-end request)
+Tuần 6  file 15 + 16        →  concurrency phân tán + transaction/consistency
+Tuần 7  file 17 + 18        →  caching + messaging
+Tuần 8  file 19             →  luyện system design bằng 7 case (nói to, vẽ ra giấy)
+```
+
+### ▶️ Demo chạy được
+Mọi câu trong track internals đều có demo in ra số liệu thật (allocation, gen, thread id, thời gian):
+```bash
+cd HW.CS
+dotnet run                 # menu tương tác: chọn topic → chọn câu
+dotnet run -- 11 all       # chạy toàn bộ topic 11
+dotnet run -- 12 5         # chạy câu số 5 của topic 12
+```
+> Track 15–19 (scale & load) là track **thiết kế hệ thống** — code trong đó là mẫu để đọc
+> và thảo luận khi phỏng vấn, không có demo runner tương ứng.
+
+---
+
+## 🤖 Track "AI Engineer" — LLM, Agent, MCP, Harness (file AI-01 → AI-07)
+
+> Track riêng, độc lập với 19 file .NET ở trên. Cùng khung
+> **❓ Vấn đề gốc → ⚙️ Cơ chế bên dưới → 💻 Code/đo đạc → ⚖️ Hệ quả thực chiến**.
+
+| # | Chủ đề | File |
+|---|--------|------|
+| AI-01 | **Nền tảng LLM** — token/BPE, KV cache, prefill vs decode, sampling, hallucination, context rot, thinking & effort, embedding, RAG, structured output, prompt caching, cost, eval, prompt injection | [interview.AI.01-LLM-Foundations.md](interview.AI.01-LLM-Foundations.md) |
+| AI-02 | **Prompt & Context Engineering** — tool description, prompt cruft, compaction vs context editing vs memory, progressive disclosure, versioning, hill-climbing | [interview.AI.02-Prompt-Context.md](interview.AI.02-Prompt-Context.md) |
+| AI-03 | **Agentic Loop & Loop Engineer** — workflow vs agent, manual loop, verify, điều kiện dừng, task budget, chế độ hỏng, observability, Loop Agentic | [interview.AI.03-Agentic-Loop.md](interview.AI.03-Agentic-Loop.md) |
+| AI-04 | **MCP chuyên sâu** — JSON-RPC & lifecycle, transport, primitive, scope, chi phí context, auth, 6 rủi ro bảo mật, thiết kế server | [interview.AI.04-MCP.md](interview.AI.04-MCP.md) |
+| AI-05 | **Harness** — hooks, settings & precedence, permissions, slash commands, skills, subagents, plugins | [interview.AI.05-Harness-Config.md](interview.AI.05-Harness-Config.md) |
+| AI-06 | **Multi-agent & Agent Team** — topology, kinh tế học token, handoff, task list, bảo mật giữa agent, khi nào KHÔNG dùng | [interview.AI.06-MultiAgent-Teams.md](interview.AI.06-MultiAgent-Teams.md) |
+| AI-07 | **Kiến trúc triển khai** — LLM gateway, Clean Architecture, background job, resilience, cost governance, tracing, đa tenant, rollout, áp dụng vào HW | [interview.AI.07-Impl-Architecture.md](interview.AI.07-Impl-Architecture.md) |
+
+**➡️ Mục lục đầy đủ của track AI: [interview.AI.md](interview.AI.md)** (~116 câu + 3 case study)
+
+---
+
 ## 🎯 Mẹo trả lời phỏng vấn Middle
 - **Trả lời có cấu trúc**: định nghĩa → khi nào dùng → ví dụ thực tế → trade-off.
 - **Nêu trade-off**: middle được đánh giá cao khi biết "tại sao" và "khi nào KHÔNG dùng", không chỉ "cái gì".
@@ -414,10 +494,84 @@
 
 ---
 
+## 🔬 Thuật ngữ Internals (file 11–14)
+
+### Runtime / Type system
+| Thuật ngữ | Giải thích ngắn gọn |
+|---|---|
+| IL / metadata | Bytecode + bảng mô tả type; nền của GC chính xác, reflection, JIT theo máy đích. |
+| Metadata token | Định danh 4 byte của một hàng trong bảng metadata (`0x06…` = MethodDef). |
+| MethodTable / type handle | Cấu trúc runtime của một closed type: vtable, interface map, GC layout. |
+| Object header (sync block) | 8 byte trước object: lock, hash code, GC bit. |
+| Virtual Stub Dispatch | Cơ chế gọi interface method: stub tra interface map rồi cache. |
+| Devirtualization | JIT biến virtual call thành direct call (nhờ `sealed` hoặc PGO). |
+| Tiered compilation | Tier-0 (JIT nhanh) → Tier-1 (tối ưu) sau ~30 lần gọi; OSR cho vòng lặp dài. |
+| Dynamic PGO | Thu profile ở Tier-0 để tối ưu ở Tier-1 (mặc định bật từ .NET 8). |
+| ReadyToRun (R2R) | Pre-JIT lúc build, vẫn rejit lên Tier-1 lúc chạy. |
+| Native AOT | Compile hẳn ra native lúc build; startup/RAM tốt nhất, mất dynamic code. |
+| `__Canon` | Type ẩn dùng để **chia sẻ code** cho mọi generic instantiation kiểu reference. |
+| `constrained.` prefix | Cho phép gọi interface method trên struct **không boxing**. |
+| Defensive copy | Bản sao ẩn compiler tạo khi gọi member trên struct không `readonly`. |
+| Byref / managed pointer | Con trỏ GC hiểu được; nền của `ref`, `ref struct`, `Span<T>`. |
+| Source generator | Sinh code lúc compile để thay reflection lúc runtime (AOT/trim-safe). |
+
+### Memory / GC
+| Thuật ngữ | Giải thích ngắn gọn |
+|---|---|
+| Allocation context | Lát Gen 0 riêng của mỗi thread → cấp phát bằng bump pointer, không lock. |
+| Generational hypothesis | "Hầu hết object chết trẻ" — cơ sở của gen 0/1/2. |
+| GC roots | Stack + thanh ghi, static field, GC handle, f-reachable queue, interop. |
+| Safe point / GC poll | Điểm thread có thể bị dừng an toàn để GC chạy. |
+| Card table / write barrier | Đánh dấu vùng vừa ghi reference → GC Gen 0 không phải quét cả Gen 2. |
+| SOH / LOH / POH | Small Object Heap / Large (≥85.000 B, không nén) / Pinned Object Heap. |
+| Background GC | Thu Gen 2 song song với app để giảm pause. |
+| F-reachable queue | Hàng đợi giữ object có finalizer sống thêm ít nhất một vòng GC. |
+| Mid-life crisis | Object sống vừa đủ để bị promote rồi mới chết — kiểu rác tệ nhất. |
+| Pinning / fragmentation | Ghim object khiến GC không dồn được → heap thủng lỗ. |
+| `gcroot` | Lệnh trong dotnet-dump trả lời "ai đang giữ object này sống". |
+
+### Async / Threading
+| Thuật ngữ | Giải thích ngắn gọn |
+|---|---|
+| IOCP / epoll | Cơ chế OS báo I/O hoàn tất — lý do "không thread nào chờ I/O". |
+| Async state machine | Struct compiler sinh ra; chỉ box lên heap khi await thật sự chưa xong. |
+| Awaitable pattern | `GetAwaiter()` + `IsCompleted` + `OnCompleted` + `GetResult`. |
+| `ExecutionContext` | Mang `AsyncLocal`, culture… và **luôn flow** qua await. |
+| `SynchronizationContext` | "Chạy continuation ở đâu"; ASP.NET Core **không có**. |
+| Work stealing | Worker rỗng lấy việc từ đuôi hàng đợi của worker khác. |
+| Hill climbing | Thuật toán inject thread của ThreadPool (~1–2 thread/giây). |
+| Thread pool starvation | Block thread pool ⇒ CPU thấp nhưng latency cao, queue dài. |
+| `IValueTaskSource` | Object tái sử dụng đứng sau `ValueTask` (chỉ await một lần!). |
+| Memory reordering | Compiler/JIT/CPU đảo lệnh; x86 mạnh, ARM64 yếu → bug lộ trên ARM. |
+| Thin lock → sync block | `lock` rẻ khi không tranh chấp; inflate ra kernel object khi tranh chấp. |
+| False sharing | Hai biến chung cache line 64B → nhiều core tranh nhau, scaling = 0. |
+| Backpressure | Producer bị chặn khi consumer tụt lại (`Channel` bounded, Pipelines). |
+
+### Framework
+| Thuật ngữ | Giải thích ngắn gọn |
+|---|---|
+| Call site (DI) | Cây khởi tạo được container compile thành delegate sau vài lần resolve. |
+| Captive dependency | Singleton giữ scoped → scoped sống mãi (lỗi hay gặp nhất với DbContext). |
+| `Func<RequestDelegate, RequestDelegate>` | Hình dạng thật của một middleware; pipeline gấp từ cuối về đầu. |
+| `System.IO.Pipelines` | Buffer chia sẻ + backpressure, nền của Kestrel; dữ liệu là `ReadOnlySequence<byte>`. |
+| Endpoint routing | Chọn endpoint **trước**, chạy **sau** → middleware ở giữa đọc được metadata. |
+| Query cache key (EF) | Hình dạng expression tree; closure variable được parameter hoá tự động. |
+| `DetectChanges` | So snapshot để suy ra cột thay đổi — O(entity × property). |
+| Identity map | Trong một DbContext, một khoá chính ↔ một instance. |
+| Behavior chain (MediatR) | Decorator gấp ngược danh sách behavior quanh handler (giống middleware). |
+| Outbox | Ghi message vào DB cùng transaction nghiệp vụ; processor publish sau ⇒ at-least-once. |
+| Cache stampede | Nhiều request cùng miss một key → dồn tải xuống DB. |
+
+---
+
 ## 📖 Cách dùng bộ tài liệu
 1. Đọc theo thứ tự file 1 → 10, hoặc nhảy vào chủ đề yếu.
 2. Với mỗi câu: che phần trả lời, tự trả lời trước, rồi đối chiếu.
 3. Gõ lại code minh hoạ để nhớ lâu — đặc biệt các ví dụ ❌/✅.
 4. Tra nhanh khái niệm ở [Bảng thuật ngữ](#-bảng-thuật-ngữ-glossary) bên trên.
+5. **Track internals (11–14)**: đọc xong mỗi file thì chạy demo tương ứng
+   (`dotnet run -- 11 all`) và **đối chiếu số liệu in ra** với phần giải thích — nhớ lâu hơn đọc
+   gấp nhiều lần. Cuối mỗi file có **checklist tự kiểm tra**: tự nói thành lời, nếu ấp úng chỗ nào
+   thì quay lại đúng câu đó.
 
 _Chúc bạn phỏng vấn thành công! 🚀_

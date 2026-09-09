@@ -7,6 +7,7 @@ using HW.Domain.Abstractions.Sagas;
 using HW.Infrastructure.Sagas;
 using HW.Domain.Entities;
 using HW.Infrastructure.Caching;
+using HW.Infrastructure.Diagnostics;
 using HW.Infrastructure.Interceptors;
 using HW.Infrastructure.Messaging;
 using HW.Infrastructure.Messaging.Kafka;
@@ -16,6 +17,7 @@ using HW.Infrastructure.Repositories;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -34,6 +36,15 @@ public static class ServiceCollectionExtensions
             var auditableInterceptor = provider.GetService<AuditableEntitiesInterceptor>();
             var options = provider.GetRequiredService<IOptionsMonitor<MariaDbRetryOptions>>();
 
+            // The SQL trace interceptor is optional: it is registered with the agent stack, and the
+            // app has to run without it. Both are collected here so the null-tolerant call below
+            // takes whatever is present.
+            IInterceptor?[] interceptors =
+            [
+                auditableInterceptor,
+                provider.GetService<SqlTraceInterceptor>(),
+            ];
+
             builder
                .EnableDetailedErrors(isDevelopment)
                .EnableSensitiveDataLogging(isDevelopment)
@@ -49,7 +60,7 @@ public static class ServiceCollectionExtensions
                                     maxRetryDelay: options.CurrentValue.MaxRetryDelay,
                                     errorNumbersToAdd: options.CurrentValue.ErrorNumbersToAdd))
                             .MigrationsAssembly(typeof(ApplicationDbContext).Assembly.GetName().Name))
-               .AddInterceptors(auditableInterceptor);
+               .AddInterceptors(interceptors.OfType<IInterceptor>().ToArray());
 
         }).AddIdentity<AppUser, AppRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()

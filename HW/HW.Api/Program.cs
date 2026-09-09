@@ -2,6 +2,7 @@ using FluentValidation;
 using HW.Api.DI;
 using HW.Api.Middlewares;
 using HW.Application.DI;
+using HW.Infrastructure.AI;
 using HW.Infrastructure.DI;
 using static HW.Infrastructure.DI.Options;
 
@@ -21,6 +22,7 @@ builder.Services.AddOrderSagaMessaging();
 builder.Services.AddMessaging(builder.Configuration);
 builder.Services.AddInfrastructureServices();
 builder.Services.AddApplicationServices();
+builder.Services.AddAiAgents(builder.Configuration);
 builder.Services.AddSwaggerDocumentation();
 
 var app = builder.Build();

@@ -2,6 +2,10 @@
 
 [⬅️ Phần 1](interview.NET.01-CSharp-CLR.md) | [Mục lục](interview.NET.md) | [Phần 3 — Collections & LINQ ➡️](interview.NET.03-Collections-LINQ.md)
 
+> 🔬 **Đào sâu cơ chế**: state machine compiler sinh ra, IOCP/epoll, `ExecutionContext` vs
+> `SynchronizationContext`, ThreadPool work-stealing & starvation, memory model, thin lock,
+> false sharing → [Phần 13 — Async & Threading Internals](interview.NET.13-Async-Threading-Internals.md).
+
 ---
 
 ## 26. `async`/`await` hoạt động như thế nào?

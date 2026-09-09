@@ -1,11 +1,17 @@
 using HW.CS.Demos;
 
-// Đăng ký các topic demo. Mỗi topic ứng với 1 file interview.
-// (Hiện có file 01; thêm file khác vào danh sách này khi triển khai tiếp.)
+// Đăng ký các topic demo. Mỗi topic ứng với 1 file interview/interview.NET.NN-*.md.
+// Số ở đầu Title (01, 02, 11…) chính là MÃ TOPIC dùng cho tham số dòng lệnh.
+// Thêm file mới thì thêm một dòng vào mảng dưới đây.
 var topics = new IDemoTopic[]
 {
     new Demo01_CSharpClr(),
     new Demo02_AsyncThreading(),
+    new Demo11_RuntimeInternals(),
+    new Demo12_MemoryGc(),
+    new Demo13_AsyncThreadingInternals(),
+    new Demo14_FrameworkInternals(),
+    new Demo20_AgenticLoop(),
 };
 
 // Cho phép chạy nhanh không tương tác:  dotnet run -- 01 all   |   dotnet run -- 01 3
@@ -77,12 +83,13 @@ void RunOne(DemoItem item)
 
 void RunFromArgs(string[] a)
 {
-    if (!int.TryParse(a[0], out int t) || t < 1 || t > topics.Length)
+    var topic = FindTopic(a[0]);
+    if (topic is null)
     {
         Console.WriteLine($"Topic không hợp lệ: {a[0]}");
+        Console.WriteLine($"Topic có sẵn: {string.Join(", ", topics.Select(TopicCode))}");
         return;
     }
-    var topic = topics[t - 1];
 
     if (a.Length < 2 || a[1].Equals("all", StringComparison.OrdinalIgnoreCase))
     {
@@ -94,4 +101,18 @@ void RunFromArgs(string[] a)
         RunOne(topic.Items[q - 1]);
     else
         Console.WriteLine($"Câu không hợp lệ: {a[1]}");
+}
+
+// Mã topic = phần số ở đầu Title, ví dụ "11 — Runtime Internals…" ⇒ "11".
+string TopicCode(IDemoTopic t) => t.Title.Split(' ', 2)[0];
+
+// Chấp nhận cả MÃ topic ("11", "01") lẫn VỊ TRÍ trong menu ("1", "3").
+IDemoTopic? FindTopic(string key)
+{
+    var byCode = topics.FirstOrDefault(t => TopicCode(t).Equals(key, StringComparison.OrdinalIgnoreCase));
+    if (byCode is not null) return byCode;
+
+    return int.TryParse(key, out int index) && index >= 1 && index <= topics.Length
+        ? topics[index - 1]
+        : null;
 }

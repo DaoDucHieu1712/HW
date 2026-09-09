@@ -3,6 +3,11 @@
 [⬅️ Về mục lục](interview.NET.md) | Tiếp theo: [Phần 2 — Async & Threading ➡️](interview.NET.02-Async-Threading.md)
 
 > Mỗi câu: định nghĩa → điểm nhấn → code minh hoạ (❌ sai / ✅ đúng) → trade-off.
+>
+> 🔬 **Muốn đào sâu "bên dưới chạy ra sao"?** File này trả lời *cái gì / khi nào*. Phần cơ chế —
+> object layout, MethodTable, boxing ở mức IL, JIT/tiering, generic sharing — nằm ở
+> [Phần 11 — Runtime Internals](interview.NET.11-Runtime-Internals.md); còn GC, heap, LOH,
+> finalizer, `Span<T>` ở [Phần 12 — Memory & GC Internals](interview.NET.12-Memory-GC-Internals.md).
 
 ---
 

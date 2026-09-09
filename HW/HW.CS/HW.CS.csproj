@@ -7,4 +7,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Demo14 dùng DI / middleware pipeline / Options / Logging THẬT của ASP.NET Core.
+         FrameworkReference lấy từ shared framework đã cài sẵn — không cần restore NuGet. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Exe\" />
+  </ItemGroup>
+
 </Project>
