@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Text.RegularExpressions;
-using HW.Application.Abstractions.Development;
+using HW.Agentic.Abstractions.Development;
 
 namespace HW.Infrastructure.Development;
 

@@ -1,7 +1,7 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
-using HW.Application.Abstractions.Development;
+using HW.Agentic.Abstractions.Development;
 using Microsoft.Extensions.Logging;
 
 namespace HW.Infrastructure.Development;

@@ -1,4 +1,4 @@
-using HW.Application.Abstractions.Diagnostics;
+﻿using HW.Agentic.Abstractions.Diagnostics;
 
 namespace HW.Infrastructure.Diagnostics;
 

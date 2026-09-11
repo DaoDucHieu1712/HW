@@ -1,0 +1,4 @@
+# Loop state is local to a person/machine - do not commit it.
+*
+!.gitignore
+!README.md

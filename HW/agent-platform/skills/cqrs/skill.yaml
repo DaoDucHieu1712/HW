@@ -1,0 +1,7 @@
+name: cqrs
+version: "1.0"
+description: >-
+  Command Query Responsibility Segregation with MediatR: one handler per use
+  case, vertical slices, validation and transactions in pipeline behaviours.
+tags: [architecture, dotnet, backend]
+applies_to: [planner, coding, review, documentation]

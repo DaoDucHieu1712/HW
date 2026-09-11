@@ -1,0 +1,54 @@
+{
+  "_note": "Hook cua PLUGIN nam o DAY, khong nam trong settings.json. Duong dan PHAI dung ${CLAUDE_PLUGIN_ROOT} - vi tri cai dat khac nhau tren tung may.",
+
+  "PreToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/hooks/block-dangerous.ps1\"",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "Read|Grep|Glob",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/hooks/protect-secrets.ps1\"",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+
+  "PostToolUse": [
+    {
+      "matcher": "Edit|Write",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/hooks/format-after-edit.ps1\"",
+          "timeout": 90,
+          "async": true,
+          "statusMessage": "Format & lint..."
+        }
+      ]
+    }
+  ],
+
+  "PostToolUseFailure": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${CLAUDE_PLUGIN_ROOT}/hooks/loop-progress.ps1\"",
+          "timeout": 15
+        }
+      ]
+    }
+  ]
+}

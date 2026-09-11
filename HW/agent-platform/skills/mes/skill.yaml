@@ -1,0 +1,7 @@
+name: mes
+version: "1.0"
+description: >-
+  Manufacturing Execution System domain: work orders, routings, operations,
+  traceability, and why an MES may not silently lose or invent a unit.
+tags: [domain, manufacturing]
+applies_to: [planner, coding, review, log_analysis, documentation]

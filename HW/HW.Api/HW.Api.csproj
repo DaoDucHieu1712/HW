@@ -14,6 +14,17 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <!-- Logging: Serilog is referenced only by the composition root. Every other layer keeps
+       logging through Microsoft.Extensions.Logging abstractions, so nothing below the API is
+       coupled to the sink we happen to ship logs to. -->
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="8.0.0" />
+    <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+    <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
+    <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\HW.Application\HW.Application.csproj" />
     <ProjectReference Include="..\HW.Infrastructure\HW.Infrastructure.csproj" />

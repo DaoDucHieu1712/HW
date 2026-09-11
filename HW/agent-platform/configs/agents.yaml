@@ -1,0 +1,36 @@
+# Per-agent overrides layered on top of each agent class's own defaults.
+# `tools` restricts which registered tools the agent may call; an empty list
+# means "no tools" and omitting the key means "the agent class default".
+agents:
+  supervisor:
+    temperature_effort: high
+    tools: []
+    skills: []
+
+  planner:
+    tools: [search_code, read_file, query_jira, analyze_logs]
+    skills: [clean_architecture, cqrs]
+
+  coding:
+    tools: [search_code, read_file, write_file, build_solution]
+    skills: [cqrs, clean_architecture, efcore]
+
+  unittest:
+    tools: [read_file, write_file, generate_unit_test, run_tests]
+    skills: [xunit, integration_testing]
+
+  review:
+    tools: [read_file, search_code]
+    skills: [clean_architecture, event_driven_architecture]
+
+  log_analysis:
+    tools: [analyze_logs, search_code, query_database]
+    skills: [mes]
+
+  jira:
+    tools: [query_jira]
+    skills: []
+
+  documentation:
+    tools: [read_file, search_code, write_file]
+    skills: [clean_architecture]

@@ -1,6 +1,6 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
-using HW.Application.Abstractions.Chat;
+using HW.Agentic.Abstractions.Chat;
 
 namespace HW.Infrastructure.Chat;
 

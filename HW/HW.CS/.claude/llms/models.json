@@ -1,0 +1,80 @@
+{
+  "_note": "Cache cua thong tin model. API va gia thay doi nhanh - xem 'verifyBefore' truoc khi dung lam khang dinh chac chan.",
+  "_source": "skill claude-api (cached 2026-06-24)",
+  "_verifyBefore": "Bao gia cho khach, chon model cho he thong that, hoac migrate. Kiem chung bang GET /v1/models va trang pricing.",
+
+  "defaultModel": "claude-opus-5",
+  "_defaultRule": "Dung claude-opus-5 tru khi nguoi dung noi ro model khac. KHONG tu ha cap de tiet kiem - do la quyet dinh cua nguoi dung.",
+
+  "models": [
+    {
+      "id": "claude-opus-5",
+      "name": "Claude Opus 5",
+      "contextWindow": 1000000,
+      "pricePerMTok": { "input": 5.0, "output": 25.0 },
+      "thinking": "adaptive (BAT san mac dinh - khac Opus 4.8/4.7). disabled chi chap nhan o effort <= high",
+      "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+      "useFor": "Mac dinh cho moi viec: coding, agentic loop, phan tich, review"
+    },
+    {
+      "id": "claude-sonnet-5",
+      "name": "Claude Sonnet 5",
+      "contextWindow": 1000000,
+      "pricePerMTok": { "input": 2.0, "output": 10.0 },
+      "thinking": "adaptive la che do on duy nhat; phai dat ro rang",
+      "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+      "useFor": "Khi nguoi dung yeu cau ro rang. Khong tu dong ha cap tu Opus."
+    },
+    {
+      "id": "claude-haiku-4-5",
+      "name": "Claude Haiku 4.5",
+      "contextWindow": 200000,
+      "pricePerMTok": { "input": 1.0, "output": 5.0 },
+      "thinking": "doi cu: { type: 'enabled', budget_tokens: N }",
+      "effortLevels": [],
+      "_effortNote": "effort BAO LOI tren Haiku 4.5 - dung gui tham so nay",
+      "useFor": "Hook type 'prompt' (gac cong chay MOI luot), worker doc-nhieu trong multiagent"
+    },
+    {
+      "id": "claude-fable-5-1",
+      "name": "Claude Fable 5.1",
+      "contextWindow": 1000000,
+      "pricePerMTok": { "input": 10.0, "output": 50.0 },
+      "thinking": "LUON bat - bo han tham so 'thinking'. Moi cau hinh ro rang khac deu 400.",
+      "effortLevels": ["low", "medium", "high", "xhigh", "max"],
+      "useFor": "CHI khi nguoi dung yeu cau dich danh. Gia vuot tang Opus.",
+      "caveats": [
+        "tool_choice 'any'/'tool' bi 400 - dung 'auto' + chi dan, hoac strict:true",
+        "Yeu cau luu tru du lieu 30 ngay - to chuc ZDR bi 400",
+        "Nen bat server-side fallbacks vi stop_reason co the la 'refusal'"
+      ]
+    }
+  ],
+
+  "apiDrift": {
+    "_note": "Nhung mau nay tung dung va NAY DA SAI. Biet chung loi thoi - va vi sao - gia tri hon thuoc long API hien tai.",
+    "thinking": {
+      "cu": "thinking: { type: 'enabled', budget_tokens: N }",
+      "moi": "thinking: { type: 'adaptive' } + output_config.effort",
+      "note": "budget_tokens bi 400 tren Fable 5/5.1, Opus 5/4.8/4.7, Sonnet 5"
+    },
+    "sampling": {
+      "cu": "temperature / top_p / top_k",
+      "moi": "DA GO tren cac model doi moi - gui vao la 400"
+    },
+    "structuredOutput": {
+      "cu": "Prefill assistant turn de ep JSON",
+      "moi": "output_config.format (structured outputs). Prefill bi 400."
+    },
+    "outputFormat": { "cu": "output_format", "moi": "output_config.format" },
+    "mcpTransport": { "cu": "SSE", "moi": "streamable HTTP" }
+  },
+
+  "promptCaching": {
+    "matchRule": "Khop theo TIEN TO. Thu tu render: tools -> system -> messages.",
+    "consequence": "Mot byte doi trong tien to huy toan bo phan sau.",
+    "design": "Dat noi dung ON DINH truoc (system dong bang, tool list tat dinh); dat noi dung BIEN THIEN (timestamp, id moi request, cau hoi) SAU breakpoint cuoi.",
+    "verify": "usage.cache_read_input_tokens. Bang 0 lien tuc => co silent invalidator (DateTime.Now trong system prompt, JSON khong sort, tool set thay doi).",
+    "maxBreakpoints": 4
+  }
+}

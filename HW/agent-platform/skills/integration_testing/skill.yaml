@@ -1,0 +1,7 @@
+name: integration_testing
+version: "1.0"
+description: >-
+  Integration tests that exercise the real composition: WebApplicationFactory,
+  a real database in a container, and deterministic time and messaging.
+tags: [testing, dotnet, infrastructure]
+applies_to: [unittest, review]

@@ -1,0 +1,88 @@
+{
+  "name": "feature-loop",
+  "description": "Write a new feature/function as a vertical CQRS slice: lock the scope -> outward from the domain -> test in step",
+  "pattern": "vertical slice, verify after each layer",
+  "whenToUse": "Adding a feature, endpoint, function, or a new agent tool.",
+  "whenNotToUse": "The request is still vague at the business level -> write an SRS first. Changing existing code -> fixbug-loop.",
+  "maxTurns": 25,
+  "command": "/feature (full feature) | /func (a single function)",
+  "skill": "feature-dev",
+  "steps": [
+    {
+      "id": "scope",
+      "goal": "Lock the scope BEFORE typing a line",
+      "outputs": ["DO: <exactly what>", "DON'T: <the adjacent thing deliberately left alone>", "DONE WHEN: <which verifier is green>"],
+      "exitCriteria": "The three lines are written down. Anywhere two readings lead to substantially different work => ASK, do not guess.",
+      "note": "The most common failure mode at this step is not writing the wrong thing - it is writing TOO MUCH."
+    },
+    {
+      "id": "place",
+      "goal": "Put the code in the right project",
+      "outputs": ["Table: what changes -> which project"],
+      "exitCriteria": "Domain -> HW.Domain | the feature's CQRS + agent tools -> HW.Application/Features/<F>/ | EF/store -> HW.Infrastructure | controller/DI -> HW.Api | tests -> HW.UnitTests",
+      "note": "Only put something in HW.Agentic if it is right for EVERY application. A test blocks it from referencing back up: HW.UnitTests/Agentic/AgenticIsolationTests.cs"
+    },
+    {
+      "id": "read-pattern",
+      "goal": "Follow the shape that exists, do not invent a new one",
+      "agent": "explorer",
+      "outputs": ["The template file that was read"],
+      "exitCriteria": "At least one comparable feature has been read (Features/Vocabs/ is the most complete template)",
+      "note": "New code must read like the code around it: same comment density, same naming, same idioms."
+    },
+    {
+      "id": "domain",
+      "goal": "Invariants belong to the domain, not to the handler",
+      "agent": "implementer",
+      "outputs": ["Entity / value object / domain event"],
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level build",
+      "exitCriteria": "Build green + domain tests for every invariant and every domain event"
+    },
+    {
+      "id": "application",
+      "goal": "Command/query + validator + handler",
+      "agent": "implementer",
+      "outputs": ["Handler", "Validator", "DTO"],
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level build",
+      "exitCriteria": "Handler tests: happy + not-found + one boundary case. Validator tests: one test per rule.",
+      "note": "Queries do NOT open transactions. Long-running work (agents, fan-out) makes that more important, not less."
+    },
+    {
+      "id": "infrastructure",
+      "goal": "EF config / repository / store",
+      "outputs": ["Infrastructure changes"],
+      "exitCriteria": "Needs a migration => STOP and ASK FOR APPROVAL. A migration is an irreversible action.",
+      "requiresApproval": ["dotnet ef migrations add", "dotnet ef database update", "broker schema change"]
+    },
+    {
+      "id": "api",
+      "goal": "Controller + route + response shape + DI",
+      "agent": "implementer",
+      "outputs": ["Endpoint", "DI registration in the feature's ServiceCollectionExtensions"],
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level build",
+      "exitCriteria": "Build green",
+      "note": "Going the other way (controller first) almost always leaks DTOs back into the domain."
+    },
+    {
+      "id": "verify",
+      "goal": "Prove it is done",
+      "agent": "verifier",
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level full",
+      "exitCriteria": "PASS, and nothing outside the DO: line was touched"
+    },
+    {
+      "id": "review",
+      "goal": "A second pair of eyes before declaring done",
+      "agent": "reviewer",
+      "outputs": ["Findings, or 'no issues'"],
+      "exitCriteria": "The surrounding code was read before judging"
+    }
+  ],
+  "stopConditions": [
+    { "id": "scope-creep", "rule": "editing a file that is not on the DO: line", "action": "Stop. Record it under 'Seen but not touched', do not fix it." },
+    { "id": "irreversible", "rule": "needs a migration / schema change / data deletion", "action": "Stop and ask for approval. Do not do it and report afterwards." },
+    { "id": "ambiguous", "rule": "two readings lead to substantially different work", "action": "Ask one question. Cheaper than 300 wrong lines." },
+    { "id": "thrashing", "rule": "the same build error 3 times", "enforcedBy": "hooks/loop-progress.ps1" },
+    { "id": "max-turns", "rule": "turns >= 25", "enforcedBy": "functions/Task.ps1" }
+  ]
+}

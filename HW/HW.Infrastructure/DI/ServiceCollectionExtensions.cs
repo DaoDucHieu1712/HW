@@ -10,7 +10,6 @@ using HW.Infrastructure.Caching;
 using HW.Infrastructure.Diagnostics;
 using HW.Infrastructure.Interceptors;
 using HW.Infrastructure.Messaging;
-using HW.Infrastructure.Messaging.Kafka;
 using HW.Infrastructure.Messaging.MassTransitAdapter;
 using HW.Infrastructure.Messaging.RabbitMq;
 using HW.Infrastructure.Repositories;
@@ -138,13 +137,19 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
-    /// Wires up the message bus adapter named by <c>Messaging:Provider</c> — RabbitMQ, Kafka, or a
-    /// no-op when the section is absent. Handlers are registered separately with
-    /// <see cref="AddMessageHandler{TMessage, THandler}"/>, in either order.
+    /// Wires up the message bus adapter named by <c>Messaging:Provider</c> — the hand-rolled RabbitMQ
+    /// adapter, MassTransit over the same broker, or a no-op when the section is absent. Handlers are
+    /// registered separately with <see cref="AddMessageHandler{TMessage, THandler}"/>.
     ///
     /// <para>
-    /// Only the selected provider's client is constructed, so an unreachable RabbitMQ costs nothing
-    /// in a Kafka deployment and neither is touched under <c>None</c>.
+    /// Only the selected provider's client is constructed, so nothing connects to RabbitMQ under
+    /// <c>None</c> and a developer with no broker running still gets a working app.
+    /// </para>
+    ///
+    /// <para>
+    /// Handler registration order matters under <c>MassTransit</c> only, which seals the subscription
+    /// registry while building its bus; see <see cref="AddMassTransitProvider"/>. Registering every
+    /// handler before this call keeps the provider a pure configuration choice.
     /// </para>
     /// </summary>
     public static void AddMessaging(this IServiceCollection services, IConfiguration configuration)
@@ -170,12 +175,6 @@ public static class ServiceCollectionExtensions
                 // deliberately not on the IMessageBus contract.
                 services.AddSingleton<IBrokerBus>(sp => sp.GetRequiredService<RabbitMqMessageBus>());
                 services.AddHostedService<RabbitMqConsumerService>();
-                break;
-
-            case MessageBrokerProvider.Kafka:
-                services.AddSingleton<KafkaMessageBus>();
-                services.AddSingleton<IBrokerBus>(sp => sp.GetRequiredService<KafkaMessageBus>());
-                services.AddHostedService<KafkaConsumerService>();
                 break;
 
             case MessageBrokerProvider.MassTransit:

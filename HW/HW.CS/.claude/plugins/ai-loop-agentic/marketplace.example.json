@@ -1,0 +1,12 @@
+{
+  "_README": "Dat file nay (doi ten thanh marketplace.json) o GOC mot repo rieng lam marketplace. Repo private cho plugin noi bo.",
+  "name": "<ten-marketplace-cua-team>",
+  "owner": { "name": "<team>" },
+  "plugins": [
+    {
+      "name": "ai-loop-agentic",
+      "source": "./ai-loop-agentic",
+      "description": "Khung Loop Agentic cho dev: gather -> act -> verify -> stop, kem agent/skill/hook."
+    }
+  ]
+}

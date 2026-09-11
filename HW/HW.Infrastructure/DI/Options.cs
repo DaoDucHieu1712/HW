@@ -34,7 +34,10 @@ public static class Options
         [Range(1, 3600)] public int L1MaxTtlSeconds { get; init; } = 10;
     }
 
-    /// <summary>Which message broker adapter <c>AddMessaging</c> wires up.</summary>
+    /// <summary>
+    /// Which message broker adapter <c>AddMessaging</c> wires up. Both real options speak AMQP to the
+    /// same RabbitMQ broker; they differ in who owns the envelope and the retry machinery.
+    /// </summary>
     public enum MessageBrokerProvider
     {
         /// <summary>No broker. Publishes are logged and dropped; nothing is consumed.</summary>
@@ -43,19 +46,22 @@ public static class Options
         /// <summary>Hand-rolled AMQP adapter. No licence, no dependency.</summary>
         RabbitMq = 1,
 
-        Kafka = 2,
-
         /// <summary>
         /// MassTransit over RabbitMQ. Same <see cref="IMessageBus"/> contract, but MassTransit's own
         /// wire envelope, topology, retry, and error queues — <b>not</b> interchangeable with
         /// <see cref="RabbitMq"/> on a live queue. See pattern 09.
         /// </summary>
-        MassTransit = 3
+        MassTransit = 2
     }
 
     /// <summary>
-    /// Provider-neutral messaging settings, plus one nested section per adapter. Only the section
-    /// matching <see cref="Provider"/> is read, so both may be left configured across environments.
+    /// Provider-neutral messaging settings, plus the two nested sections.
+    ///
+    /// <para>
+    /// <see cref="RabbitMq"/> holds the connection and is read under <b>both</b> providers, since both
+    /// run over the same broker. <see cref="MassTransit"/> adds only what that provider needs on top —
+    /// its licence — and is ignored otherwise.
+    /// </para>
     /// </summary>
     public record MessagingOptions
     {
@@ -67,10 +73,11 @@ public static class Options
 
         /// <summary>
         /// Identifies this deployment as a set of competing consumers: each message goes to exactly
-        /// one instance in the group, and a second group on the same topic gets its own copy.
-        /// Kafka reads it as <c>group.id</c>; RabbitMQ derives the shared queue name from it.
-        /// Scaling out means running more instances under the same group — changing it per instance
-        /// turns a scaled-out deployment into N independent consumers that each handle everything.
+        /// one instance in the group, and a second group on the same topic gets its own copy. The
+        /// shared queue name is derived from it — <c>{ConsumerGroup}.{topic}</c> — so every instance
+        /// consuming that queue competes for the same deliveries. Scaling out means running more
+        /// instances under the same group; changing it per instance turns a scaled-out deployment
+        /// into N independent consumers that each handle everything.
         /// </summary>
         [Required] public string ConsumerGroup { get; init; } = "hw";
 
@@ -78,9 +85,11 @@ public static class Options
         [Range(1, 10)] public int MaxDeliveryAttempts { get; init; } = 3;
 
         /// <summary>
-        /// First retry delay; doubles per attempt. Retries block their consumer, so the default
-        /// schedule (1s, 2s, 4s) stays well inside Kafka's <c>max.poll.interval.ms</c> — a longer
-        /// one risks the broker deciding this instance is dead and rebalancing the partition away.
+        /// First retry delay; doubles per attempt. A retrying message stays unacknowledged and holds
+        /// one of its consumer's prefetch slots for the whole schedule, so the default (1s, 2s, 4s)
+        /// is kept short deliberately. The hard ceiling is RabbitMQ's <c>consumer_timeout</c> —
+        /// 30 minutes by default — past which the broker closes the channel on an unacked delivery
+        /// and every message in flight on it is redelivered.
         /// </summary>
         [Range(100, 60_000)] public int RetryBaseDelayMs { get; init; } = 1_000;
 
@@ -106,8 +115,6 @@ public static class Options
         public bool UseOutbox { get; init; } = true;
 
         public RabbitMqOptions RabbitMq { get; init; } = new();
-
-        public KafkaOptions Kafka { get; init; } = new();
 
         public MassTransitOptions MassTransit { get; init; } = new();
     }
@@ -158,29 +165,5 @@ public static class Options
         /// handled one at a time per queue, so raising it only deepens the in-flight buffer.
         /// </summary>
         [Range(1, 1000)] public ushort PrefetchCount { get; init; } = 20;
-    }
-
-    public record KafkaOptions
-    {
-        public string BootstrapServers { get; init; } = "localhost:9092";
-
-        /// <summary>
-        /// Where a brand-new consumer group starts: <c>Earliest</c> replays the topic's full history,
-        /// <c>Latest</c> starts from now. Applies only until the group has committed an offset.
-        /// </summary>
-        public string AutoOffsetReset { get; init; } = "Earliest";
-
-        /// <summary>
-        /// Partitions given to auto-created topics. Caps consumer parallelism — a group can have at
-        /// most one consumer per partition — and cannot be lowered later without recreating the topic.
-        /// Ignored where the cluster disables auto-creation and topics are provisioned out of band.
-        /// </summary>
-        [Range(1, 100)] public int DefaultPartitionCount { get; init; } = 3;
-
-        /// <summary>
-        /// Replicas per partition. Must not exceed the broker count, so the default suits a
-        /// single-broker dev cluster and must be raised (3 is typical) for production durability.
-        /// </summary>
-        [Range(1, 10)] public short DefaultReplicationFactor { get; init; } = 1;
     }
 }

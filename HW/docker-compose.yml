@@ -1,0 +1,117 @@
+# Infrastructure for HW — everything the API connects to, nothing that is the API.
+#
+#   docker compose up -d                        MariaDB, Redis and Seq (the default set)
+#   docker compose --profile rabbitmq up -d     ... plus RabbitMQ
+#   docker compose --profile all up -d          everything
+#   docker compose down                         stop, keeping data
+#   docker compose down -v                      stop and discard the volumes
+#
+# The API itself stays in the IDE: it is the thing being debugged, and rebuilding an image on
+# every change is a slower loop than F5. Every port below matches what
+# HW.Api/appsettings.Development.json already points at, so nothing needs reconfiguring.
+#
+# RabbitMQ sits behind a profile because "Messaging:Provider" is "None" in development — starting a
+# broker nothing publishes to costs memory for no benefit. Switch the provider to "RabbitMq" or
+# "MassTransit" and start the profile together; both providers use this one container.
+
+services:
+
+  # ── Database ────────────────────────────────────────────────────────────────────────────
+  # Root with no password, matching the development connection string. That is a deliberate
+  # convenience for a container bound to localhost and holding disposable data; it is also why
+  # this file must never be the one deployed anywhere.
+  mariadb:
+    image: mariadb:11.4
+    container_name: hw-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+      MARIADB_DATABASE: hw
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      # healthcheck.sh ships with the image; --connect proves the server accepts connections,
+      # not merely that the process is up, which is the distinction that matters to EF's first
+      # migration attempt.
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ── Cache ───────────────────────────────────────────────────────────────────────────────
+  # L2 behind TwoTierCacheService. The app degrades to its in-process L1 if this is missing,
+  # so it is safe to stop on its own.
+  redis:
+    image: redis:7-alpine
+    container_name: hw-redis
+    restart: unless-stopped
+    # Append-only persistence: cache contents survive a restart, which keeps a debugging session
+    # reproducible instead of starting cold every time.
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── Logs ────────────────────────────────────────────────────────────────────────────────
+  # Where Serilog ships structured events. http://localhost:5341 serves both the UI and the
+  # ingestion endpoint — the address in the "Seq" configuration section.
+  seq:
+    image: datalust/seq:latest
+    container_name: hw-seq
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      # Keeps Seq's cache off the host's RAM ceiling on a developer machine that is also running
+      # a database, a broker and an IDE.
+      SEQ_CACHE_SYSTEMRAMTARGET: "0.4"
+    ports:
+      - "5341:80"
+    volumes:
+      - seq-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Message broker ──────────────────────────────────────────────────────────────────────
+  # Serves both "Messaging:Provider": "RabbitMq" and "MassTransit" — MassTransit runs over the
+  # same broker with its own queue and error-queue conventions. Switching between the two leaves
+  # the old provider's queues behind in the management UI; they are not interchangeable, so
+  # delete them rather than expecting the new provider to drain them.
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: hw-rabbitmq
+    restart: unless-stopped
+    profiles: ["rabbitmq", "all"]
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "5672:5672"    # AMQP — what the app connects to
+      - "15672:15672"  # Management UI — http://localhost:15672 (guest/guest)
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  mariadb-data:
+  redis-data:
+  seq-data:
+  rabbitmq-data:

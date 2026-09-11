@@ -1,0 +1,59 @@
+{
+  "name": "dev-loop",
+  "description": "Pipeline phat trien mot feature: gather -> plan -> act -> verify -> report",
+  "pattern": "prompt-chaining + orchestrator-worker",
+  "whenToUse": "Task nhieu buoc, da biet muc tieu, co verifier chay duoc (build/test).",
+  "whenNotToUse": "Task nho va ro (sua mot ham, them mot field) -> lam thang, dung chay pipeline.",
+  "maxTurns": 25,
+  "steps": [
+    {
+      "id": "gather",
+      "goal": "Hieu bai toan va rang buoc that cua repo",
+      "agent": "explorer",
+      "delegateWhen": "Phai doc tren ~10 file de tra loi mot cau hoi dinh vi",
+      "outputs": ["Cau hoi da chot", "File lien quan (file:line)", "Quy uoc repo phai bam theo"],
+      "verifier": null,
+      "exitCriteria": "Neu duoc lai bai toan bang mot cau, va chi ra duoc file se dung vao"
+    },
+    {
+      "id": "plan",
+      "goal": "Quyet dinh lam gi va lam sao biet no dung",
+      "agent": "architect",
+      "outputs": ["Cac buoc", "File se dung vao", "Verifier cho tung buoc", "Ngoai pham vi"],
+      "verifier": null,
+      "exitCriteria": "MOI buoc co mot lenh verifier chay duoc. Khong co thi ke hoach chua xong."
+    },
+    {
+      "id": "act",
+      "goal": "Viet code trong pham vi da chot",
+      "agent": "implementer",
+      "outputs": ["Thay doi code", "Phat hien ngoai pham vi (ghi lai, KHONG sua)"],
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level build",
+      "verifierCadence": "sau MOI don vi nho, khong phai mot lan o cuoi",
+      "exitCriteria": "Build xanh sau moi don vi"
+    },
+    {
+      "id": "verify",
+      "goal": "Xac dinh khach quan: xanh hay do",
+      "agent": "verifier",
+      "outputs": ["PASS | FAIL | KHONG KIEM CHUNG DUOC", "Loi nguyen van neu FAIL", "Phan khong co test bao phu"],
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level full",
+      "exitCriteria": "PASS. 'KHONG KIEM CHUNG DUOC' KHONG phai PASS."
+    },
+    {
+      "id": "report",
+      "goal": "Bao cao dua tren bang chung cho nguoi doc",
+      "agent": "reporter",
+      "outputs": ["docs/reports/<ngay>-<slug>.md", "Trang thai", "Rui ro con lai"],
+      "verifier": null,
+      "exitCriteria": "Trang thai duoc neu dung mot trong ba: HOAN THANH | MOT PHAN | BI CHAN"
+    }
+  ],
+  "stopConditions": [
+    { "id": "max-turns",    "rule": "turns >= maxTurns",                        "enforcedBy": "functions/Task.ps1 (exit 2)" },
+    { "id": "no-progress",  "rule": "cung tool + cung tham so + cung loi x3",   "enforcedBy": "hooks/loop-progress.ps1 (exit 2)" },
+    { "id": "goal-reached", "rule": "Verify.ps1 -Level full => exit 0",         "enforcedBy": "functions/Verify.ps1" },
+    { "id": "quality-gate", "rule": "khong duoc ket thuc luot khi build/test do","enforcedBy": "hooks/stop-quality-gate.ps1 (LOOP_QUALITY_GATE=1)" },
+    { "id": "escalate",     "rule": "hanh dong khong hoan tac duoc, hoac het gia thuyet", "enforcedBy": "model + permissions.ask" }
+  ]
+}

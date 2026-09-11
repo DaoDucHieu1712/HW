@@ -1,0 +1,7 @@
+name: efcore
+version: "1.0"
+description: >-
+  EF Core mapping, query and migration practice: configuration over attributes,
+  tracked versus untracked reads, and avoiding the N+1 and cartesian traps.
+tags: [persistence, dotnet, database]
+applies_to: [coding, review, log_analysis]

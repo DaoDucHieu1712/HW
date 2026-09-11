@@ -1,5 +1,5 @@
-using HW.Api.Models;
-using HW.Application.Abstractions.Diagnostics;
+﻿using HW.Api.Models;
+using HW.Agentic.Abstractions.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HW.Api.Controllers;

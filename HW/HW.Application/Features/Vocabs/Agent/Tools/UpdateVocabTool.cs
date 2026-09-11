@@ -1,9 +1,9 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using HW.Application.Features.Vocabs.Commands.UpdateVocab;
 using HW.Application.Features.Vocabs.Queries.GetVocabById;
 using MediatR;
 
-using HW.Application.Agents;
+using HW.Agentic.Core;
 
 namespace HW.Application.Features.Vocabs.Agent.Tools;
 

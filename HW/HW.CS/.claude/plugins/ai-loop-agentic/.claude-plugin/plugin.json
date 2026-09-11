@@ -1,0 +1,7 @@
+{
+  "name": "ai-loop-agentic",
+  "version": "0.1.0",
+  "description": "Khung Loop Agentic cho dev: gather -> act -> verify -> stop. Kem agent (explore/plan/implement/verify/review/report), skill (SRS, SRD, mockup, fixbug, analysis, eval), va hook tat dinh (chan lenh pha huy, format sau khi sua, cong chat luong o Stop).",
+  "author": { "name": "<ten ban / team>" },
+  "keywords": ["agent", "loop", "verify", "srs", "srd", "review", "dotnet"]
+}

@@ -24,9 +24,47 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred: {Message}", ex.Message);
+            LogException(context, ex);
             await HandleExceptionAsync(context, ex);
         }
+    }
+
+    /// <summary>
+    /// Records the failure at a level that matches what it means.
+    ///
+    /// <para>
+    /// A rejected validation and a database that disappeared both arrive here as exceptions, and
+    /// logging them alike makes the error log useless — the one entry worth waking up for is buried
+    /// under a day of callers mistyping a field. The mapping mirrors the status code chosen below,
+    /// so a log level and an HTTP response never disagree about how bad something was.
+    /// </para>
+    ///
+    /// <para>
+    /// The correlation id is not written into the message: the middleware that opened the request
+    /// pushed it onto the log context, so it is already a property of this event — and of every
+    /// other event from the same request.
+    /// </para>
+    /// </summary>
+    private void LogException(HttpContext context, Exception ex)
+    {
+        var level = ex switch
+        {
+            NotFoundException => LogLevel.Warning,
+            DomainException => LogLevel.Warning,
+            FluentValidation.ValidationException => LogLevel.Warning,
+            ArgumentException => LogLevel.Warning,
+            UnauthorizedAccessException => LogLevel.Warning,
+            _ => LogLevel.Error
+        };
+
+        _logger.Log(
+            level,
+            ex,
+            "[Request] {RequestMethod} {RequestPath} failed with {ErrorType}: {ErrorMessage}",
+            context.Request.Method,
+            context.Request.Path.Value,
+            ex.GetType().Name,
+            ex.Message);
     }
 
     private static async Task HandleExceptionAsync(HttpContext context, Exception ex)

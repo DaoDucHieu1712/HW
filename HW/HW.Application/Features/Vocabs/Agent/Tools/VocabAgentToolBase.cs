@@ -1,5 +1,5 @@
-using HW.Application.Agents;
-using HW.Application.Agents.Tools;
+﻿using HW.Agentic.Core;
+using HW.Agentic.Tools;
 using MediatR;
 
 namespace HW.Application.Features.Vocabs.Agent.Tools;

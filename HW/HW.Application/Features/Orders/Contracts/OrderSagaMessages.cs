@@ -15,9 +15,10 @@ namespace HW.Application.Features.Orders.Contracts;
 /// </para>
 ///
 /// <para>
-/// Every message carries <c>SagaId</c> and partitions on it, so a saga's traffic stays in order on
-/// Kafka. Topics are prefixed <c>order.saga.</c> to keep the conversation visible as one stream in
-/// broker tooling.
+/// Every message carries <c>SagaId</c> and repeats it as its correlation key, and topics are prefixed
+/// <c>order.saga.</c> — both so one saga's traffic reads as a single conversation in broker tooling
+/// and traces. Neither buys ordering: each topic is its own queue with its own competing consumers,
+/// so replies arrive whenever they arrive.
 /// </para>
 /// </summary>
 public static class OrderSagaMessages

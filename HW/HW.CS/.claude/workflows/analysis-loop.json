@@ -1,0 +1,36 @@
+{
+  "name": "analysis-loop",
+  "description": "Phan tich / dac ta: chot cau hoi -> khao sat -> SRS -> SRD -> mockup",
+  "pattern": "routing + prompt-chaining",
+  "whenToUse": "Yeu cau chua ro, hoac can tai lieu truoc khi code.",
+  "whenNotToUse": "Yeu cau da ro va nho -> di thang sang dev-loop.",
+  "maxTurns": 20,
+  "routing": {
+    "note": "Buoc dau la ROUTING, khong phai agent. Phan lon yeu cau khong can ca pipeline.",
+    "branches": [
+      { "intent": "Dinh vi code ('X nam o dau')",        "goto": "explore",  "cost": "thap" },
+      { "intent": "Danh gia tac dong ('sua Y hong gi')", "goto": "explore",  "cost": "thap" },
+      { "intent": "Yeu cau nghiep vu chua ro",           "goto": "srs",      "cost": "trung" },
+      { "intent": "Da co SRS, can thiet ke",             "goto": "srd",      "cost": "trung" },
+      { "intent": "Tranh cai ve UI/luong man hinh",      "goto": "mockup",   "cost": "thap" }
+    ]
+  },
+  "steps": [
+    { "id": "explore", "agent": "explorer", "skill": "code-analysis",
+      "exitCriteria": "Tra loi duoc cau hoi da chot, kem file:line" },
+    { "id": "srs", "agent": "analyst", "skill": "spec-srs",
+      "outputs": ["docs/specs/SRS-<slug>.md"],
+      "exitCriteria": "MOI yeu cau gan duoc voi mot acceptance criterion KIEM CHUNG DUOC" },
+    { "id": "srd", "skill": "spec-srd",
+      "outputs": ["docs/specs/SRD-<slug>.md"],
+      "requires": ["srs"],
+      "exitCriteria": "Bang danh doi day du (ke ca cot 'Danh doi chap nhan'); moi buoc co verifier" },
+    { "id": "mockup", "skill": "mockup",
+      "outputs": ["docs/mockups/<slug>.html"],
+      "exitCriteria": "Da ve du 4 trang thai: rong | dang tai | loi | nhieu du lieu" }
+  ],
+  "stopConditions": [
+    { "id": "unanswerable", "rule": "Khong chot duoc cau hoi cu the",
+      "action": "HOI nguoi dung. Khong doc bua 200 file roi tom tat chung chung." }
+  ]
+}

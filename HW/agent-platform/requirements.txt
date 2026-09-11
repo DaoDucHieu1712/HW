@@ -1,0 +1,21 @@
+# Core -------------------------------------------------------------------
+anthropic>=0.70,<2            # official Claude SDK
+langgraph>=0.2.60             # StateGraph orchestration
+langchain-core>=0.3.28        # shared message/runnable primitives
+langgraph-checkpoint-sqlite>=2.0.1   # durable checkpoints for human-in-the-loop
+pyyaml>=6.0.1                 # configuration and skill manifests
+
+# Memory -----------------------------------------------------------------
+chromadb>=0.5.20              # vector store; the platform degrades without it
+
+# MCP --------------------------------------------------------------------
+mcp>=1.2.0                    # Model Context Protocol client (stdio servers)
+
+# Observability ----------------------------------------------------------
+opentelemetry-api>=1.29.0
+opentelemetry-sdk>=1.29.0
+opentelemetry-exporter-otlp-proto-http>=1.29.0
+
+# Development ------------------------------------------------------------
+pytest>=8.3.4
+pytest-cov>=6.0.0

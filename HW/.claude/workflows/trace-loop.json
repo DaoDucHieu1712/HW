@@ -1,0 +1,59 @@
+{
+  "name": "trace-loop",
+  "description": "Reconstruct an incident timeline from logs + SQL traces, settle it with evidence, DO NOT change code",
+  "pattern": "evidence gathering (two sources in parallel) -> reconcile",
+  "whenToUse": "There is an exception/stack trace/error log to interpret; an incident timeline is needed.",
+  "whenNotToUse": "The root cause is already known -> go straight to fixbug-loop.",
+  "maxTurns": 12,
+  "command": "/trace-log",
+  "skill": "trace-error-log",
+  "readOnly": true,
+  "steps": [
+    {
+      "id": "check-buffer",
+      "goal": "Does the evidence still exist",
+      "outputs": ["Whether HW.Api is running"],
+      "exitCriteria": "The ring buffers live IN PROCESS MEMORY: an app restart loses them. Gone => say so on the first line, do not keep reasoning."
+    },
+    {
+      "id": "anchor",
+      "goal": "Determine WHICH request before reading a single line",
+      "outputs": ["Correlation id"],
+      "exitCriteria": "Anchored on one id. CANNOT anchor => say plainly that the logs are unfiltered and every correlation after that is SPECULATION.",
+      "note": "Header X-Correlation-ID, log field CorrelationId. Reading unanchored logs is the fastest way to weld two requests into one story."
+    },
+    {
+      "id": "gather",
+      "goal": "Collect evidence from both sources at once",
+      "agent": "log-tracer",
+      "outputs": ["Application log (GET /api/diagnostics/logs)", "SQL trace (GET /api/diagnostics/sql)"],
+      "exitCriteria": "Quote VERBATIM. Do not summarise the stack trace.",
+      "note": "The two sources are independent, so run them in parallel; see the triage-incident workflow in HW.Agentic/Workflow/WorkflowCatalog.cs."
+    },
+    {
+      "id": "timeline",
+      "goal": "Order by TIME, not by severity",
+      "outputs": ["Table: # | t | source | event (verbatim) | note"],
+      "exitCriteria": "A continuous timeline, or an explicit marker of where it breaks"
+    },
+    {
+      "id": "walk-back",
+      "goal": "Separate cause from consequence",
+      "outputs": ["Root cause at file:line", "List of consequences mistaken for the cause"],
+      "exitCriteria": "Stop at the first line that NOTHING before it explains. The code may only be entered from there.",
+      "note": "The noisiest error line is almost always the thing that gets fixed by mistake."
+    },
+    {
+      "id": "label-uncertainty",
+      "goal": "Separate the certain part from the guessed part",
+      "outputs": ["Every claim tied to a quotable line", "Everything else labelled SPECULATION:"],
+      "exitCriteria": "No sentence blends the certain and the guessed"
+    }
+  ],
+  "stopConditions": [
+    { "id": "no-evidence", "rule": "the ring buffer is gone and there are no logs on disk", "action": "Stop. Report what is needed to reproduce; do not guess through the dark." },
+    { "id": "edit-attempt", "rule": "about to change code", "action": "Stop. This loop is read-only. Move to /fixbug with the proven root cause." },
+    { "id": "max-turns", "rule": "turns >= 12", "enforcedBy": "functions/Task.ps1" }
+  ],
+  "handoff": { "to": "fixbug-loop", "when": "the timeline stands up and there is a root cause at file:line" }
+}

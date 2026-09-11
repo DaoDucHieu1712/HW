@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-platform"
+version = "1.0.0"
+description = "Enterprise agentic AI platform: multi-agent workflows on Claude, LangGraph and MCP."
+requires-python = ">=3.12"
+readme = "README.md"
+dependencies = [
+    "anthropic>=0.70,<2",
+    "langgraph>=0.2.60",
+    "langchain-core>=0.3.28",
+    "langgraph-checkpoint-sqlite>=2.0.1",
+    "pyyaml>=6.0.1",
+    "chromadb>=0.5.20",
+    "mcp>=1.2.0",
+    "opentelemetry-api>=1.29.0",
+    "opentelemetry-sdk>=1.29.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.29.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3.4", "pytest-cov>=6.0.0", "ruff>=0.8.4", "mypy>=1.14.0"]
+
+[project.scripts]
+agent-platform = "cli:main"
+
+[tool.setuptools]
+py-modules = ["cli", "main", "container"]
+
+[tool.setuptools.packages.find]
+include = [
+    "agents*", "workflows*", "graph*", "tools*", "mcps*", "plugins*",
+    "hooks*", "memory*", "prompts*", "skills*", "commands*", "llms*",
+    "configs*", "integrations*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "A"]
+ignore = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_ignores = true
+disallow_untyped_defs = false
+ignore_missing_imports = true

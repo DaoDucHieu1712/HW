@@ -11,12 +11,18 @@ namespace HW.Infrastructure.Messaging.RabbitMq;
 /// Binds one durable queue per registered handler and feeds deliveries to <see cref="MessageDispatcher"/>.
 ///
 /// <para>
-/// The queue is named <c>{ConsumerGroup}.{topic}</c>, which is how Kafka's consumer-group semantics
-/// are reproduced on AMQP: every instance of this service opens a consumer on the <i>same</i> queue,
-/// so the broker hands each message to exactly one of them, and a different group name means a
-/// different queue with its own copy of the stream. The queue is durable and not auto-delete, so it
-/// keeps accumulating while the service is down — which is also the only reason messages published
-/// during a restart survive at all (an AMQP exchange discards anything it cannot route).
+/// The queue is named <c>{ConsumerGroup}.{topic}</c>, and that naming is what makes
+/// <c>Messaging:ConsumerGroup</c> mean something: every instance of this service opens a consumer on
+/// the <i>same</i> queue, so the broker hands each message to exactly one of them, while a different
+/// group name declares a different queue bound to the same routing key and therefore gets its own
+/// copy of the stream. Scaling out is more instances under one group; fanning out to a second
+/// independent consumer is a second group.
+/// </para>
+///
+/// <para>
+/// The queue is durable and not auto-delete, so it keeps accumulating while the service is down.
+/// That is not a nicety — it is the only reason messages published during a restart survive at all,
+/// since the exchange discards anything it cannot route the moment it arrives.
 /// </para>
 /// </summary>
 internal sealed class RabbitMqConsumerService : BackgroundService

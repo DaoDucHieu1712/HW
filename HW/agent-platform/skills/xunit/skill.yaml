@@ -1,0 +1,7 @@
+name: xunit
+version: "1.0"
+description: >-
+  Unit testing with xUnit: choosing the seam, naming by behaviour, the four case
+  groups, and proving a test would actually fail.
+tags: [testing, dotnet]
+applies_to: [unittest, coding, review]

@@ -1,0 +1,34 @@
+{
+  "_README": "Chep file nay ra GOC REPO voi ten '.mcp.json' (scope project, commit vao git). Xem .claude/mcp/README.md.",
+
+  "mcpServers": {
+    "docs": {
+      "_comment": "stdio: server chay tren may ban, tien trinh con. Hop voi truy cap he thong file/CLI cuc bo.",
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@your-org/docs-mcp-server"],
+      "env": {
+        "DOCS_ROOT": "${CLAUDE_PROJECT_DIR}/docs"
+      }
+    },
+
+    "db-readonly": {
+      "_comment": "CHI DOC. Tool ghi nam o server khac de permission rule tach bach duoc.",
+      "type": "stdio",
+      "command": "dotnet",
+      "args": ["run", "--project", "${CLAUDE_PROJECT_DIR}/tools/DbMcpServer"],
+      "env": {
+        "CONNECTION_STRING": "${DB_READONLY_CONNECTION}"
+      }
+    },
+
+    "company-api": {
+      "_comment": "streamable HTTP (KHONG phai SSE - SSE da loi thoi). Hop voi server dung chung, co OAuth.",
+      "type": "http",
+      "url": "https://mcp.internal.company.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${COMPANY_MCP_TOKEN}"
+      }
+    }
+  }
+}

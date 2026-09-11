@@ -8,7 +8,7 @@ namespace HW.Infrastructure.Messaging.MassTransitAdapter;
 /// Publishes through MassTransit's <see cref="IPublishEndpoint"/>.
 ///
 /// <para>
-/// Unlike the other two adapters this one does not build a <see cref="MessageEnvelope"/>: MassTransit
+/// Unlike the hand-rolled adapter this one does not build a <see cref="MessageEnvelope"/>: MassTransit
 /// has its own envelope and would simply wrap ours inside it, leaving two nested sets of ids and
 /// timestamps and no way for its own tooling to read either. The message is published as itself and
 /// the envelope's fields are mapped onto MassTransit's equivalents — <c>MessageId</c>, <c>SentTime</c>,
@@ -25,10 +25,11 @@ namespace HW.Infrastructure.Messaging.MassTransitAdapter;
 internal sealed class MassTransitMessageBus : IBrokerBus
 {
     /// <summary>
-    /// Carries <see cref="IPartitionedMessage.PartitionKey"/>. MassTransit has no first-class
-    /// partition-key concept on the RabbitMQ transport, and RabbitMQ cannot honour it for ordering
-    /// anyway, so it rides as a header to keep <see cref="MessageContext.PartitionKey"/> populated
-    /// consistently across providers.
+    /// Carries <see cref="IPartitionedMessage.PartitionKey"/>. The hand-rolled adapter puts the key
+    /// in the AMQP <c>CorrelationId</c> property; MassTransit owns that property for its own
+    /// request/response correlation, so here it rides as a header instead. Either way it is tracing
+    /// data — it keeps <see cref="MessageContext.PartitionKey"/> populated identically under both
+    /// providers and buys no ordering.
     /// </summary>
     internal const string PartitionKeyHeader = "HW-Partition-Key";
 

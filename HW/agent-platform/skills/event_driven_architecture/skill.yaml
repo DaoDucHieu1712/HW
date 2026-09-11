@@ -1,0 +1,7 @@
+name: event_driven_architecture
+version: "1.0"
+description: >-
+  Domain events, the transactional outbox, idempotent consumers and ordering --
+  what has to hold for asynchronous messaging to be trustworthy.
+tags: [architecture, messaging, distributed]
+applies_to: [planner, coding, review, log_analysis]

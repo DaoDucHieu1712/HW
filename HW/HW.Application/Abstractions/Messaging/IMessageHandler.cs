@@ -8,7 +8,10 @@ namespace HW.Application.Abstractions.Messaging;
 /// message retried after a crash carries the same id. This is the key to deduplicate on.
 /// </param>
 /// <param name="Topic">Logical stream the message arrived on.</param>
-/// <param name="PartitionKey">Ordering key, when the publisher set one.</param>
+/// <param name="PartitionKey">
+/// Correlation key from <see cref="IPartitionedMessage"/>, when the publisher set one. Identifies
+/// the conversation this message belongs to; it implies nothing about ordering.
+/// </param>
 /// <param name="DeliveryAttempt">
 /// 1 on first delivery, incrementing per retry. Reaching
 /// <c>Messaging:MaxDeliveryAttempts</c> sends the message to the dead-letter topic.

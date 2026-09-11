@@ -1,12 +1,12 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using HW.Api.Models;
-using HW.Application.Abstractions.AI;
-using HW.Application.Abstractions.Development;
-using HW.Application.Agents;
+using HW.Agentic.Abstractions;
+using HW.Agentic.Abstractions.Development;
+using HW.Agentic.Core;
 using HW.Application.Agents.Queries;
-using HW.Application.Agents.Tools;
-using HW.Application.Agents.Workflow;
+using HW.Agentic.Tools;
+using HW.Agentic.Workflow;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using static HW.Application.Agents.Dtos.AgentDtos;

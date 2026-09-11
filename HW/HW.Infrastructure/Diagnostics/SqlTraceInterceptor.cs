@@ -1,6 +1,6 @@
-using System.Data.Common;
+﻿using System.Data.Common;
 using System.Text;
-using HW.Application.Abstractions.Diagnostics;
+using HW.Agentic.Abstractions.Diagnostics;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace HW.Infrastructure.Diagnostics;

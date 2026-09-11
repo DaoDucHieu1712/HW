@@ -1,8 +1,8 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using HW.Application.Features.Vocabs.Queries.GenerateVocabExam;
 using MediatR;
 
-using HW.Application.Agents;
+using HW.Agentic.Core;
 
 namespace HW.Application.Features.Vocabs.Agent.Tools;
 

@@ -1,6 +1,7 @@
-using FluentValidation;
-using HW.Application.Abstractions.AI;
-using HW.Application.Abstractions.Chat;
+﻿using FluentValidation;
+using HW.Agentic.Core;
+using HW.Agentic.Abstractions;
+using HW.Agentic.Abstractions.Chat;
 using HW.Application.Agents.Dtos;
 using HW.Application.CQRS;
 

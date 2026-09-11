@@ -7,10 +7,13 @@ namespace HW.Application.Abstractions.Sagas;
 /// restart — find the stream it belongs to.
 ///
 /// <para>
-/// Implementations should also implement <c>IPartitionedMessage</c> returning <see cref="SagaId"/>,
-/// so that under Kafka one saga's traffic lands on one partition and stays ordered. It is a
-/// preference, not a guarantee (RabbitMQ cannot honour it), which is why the saga's decision methods
-/// still tolerate messages arriving out of order.
+/// Implementations should also implement <c>IPartitionedMessage</c> returning <see cref="SagaId"/>.
+/// That makes one saga's traffic findable as a single conversation in the broker's tooling and in
+/// traces — it does <b>not</b> order it. RabbitMQ hands a queue's messages to whichever competing
+/// consumer is free, so two steps of one saga can be handled at once, on different instances, in
+/// either order. This is why the saga's decision methods read persisted state instead of assuming
+/// the reply in hand is the next one due, and why a late or duplicate reply must be a no-op rather
+/// than an error.
 /// </para>
 /// </summary>
 public interface ISagaMessage

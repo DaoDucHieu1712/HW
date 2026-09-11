@@ -1,0 +1,68 @@
+{
+  "_note": "Anh xa loai cong viec -> model + effort. Day la BANG CAU HINH cho code cua ban, khong phai thu Claude Code tu doc.",
+  "_principle": "Effort la can gat danh doi chat luong DAU TIEN sau cac thang loi mien phi (caching, cat output). Do tren mau request THAT truoc khi nang mac dinh.",
+
+  "_costRule": "Chi so dung la COST PER COMPLETED TASK, khong phai cost per request. Mot request re can nhieu luot hon de xong thi khong he re.",
+
+  "routes": [
+    {
+      "route": "agentic-coding",
+      "description": "Vong lap sua code nhieu buoc, chay lau",
+      "model": "claude-opus-5",
+      "effort": "xhigh",
+      "thinking": "adaptive",
+      "why": "Coding va agentic dai hoi dap ung MANH voi effort cao. Day cung la mac dinh cua Claude Code."
+    },
+    {
+      "route": "code-review",
+      "description": "Ra soat dung dan / bao mat tren diff",
+      "model": "claude-opus-5",
+      "effort": "high",
+      "thinking": "adaptive",
+      "why": "Can suy luan ky nhung pham vi hep hon coding loop."
+    },
+    {
+      "route": "spec-analysis",
+      "description": "Viet SRS/SRD, phan tich yeu cau",
+      "model": "claude-opus-5",
+      "effort": "high",
+      "thinking": "adaptive"
+    },
+    {
+      "route": "explore-readonly",
+      "description": "Quet file tra loi cau hoi dinh vi",
+      "model": "claude-opus-5",
+      "effort": "low",
+      "thinking": "adaptive",
+      "why": "Subagent doc-nhieu: effort thap = it luot goi tool hon, it dao dau hon, ra ket qua gon hon."
+    },
+    {
+      "route": "classify-route",
+      "description": "Phan loai intent de dinh tuyen (buoc dau cua analysis-loop)",
+      "model": "claude-haiku-4-5",
+      "effort": null,
+      "_effortNote": "Haiku 4.5 BAO LOI neu gui effort",
+      "thinking": { "type": "enabled", "budget_tokens": 2048 },
+      "why": "Chay tren MOI request. Model re nhat du dung la lua chon dung."
+    },
+    {
+      "route": "hook-judge",
+      "description": "Hook type 'prompt' - gac cong ngu nghia o su kien Stop",
+      "model": "claude-haiku-4-5",
+      "effort": null,
+      "thinking": { "type": "enabled", "budget_tokens": 1024 },
+      "why": "Chay MOI luot. Dat model dat vao day la cach de nhat de nhan doi hoa don."
+    }
+  ],
+
+  "tuning": {
+    "order": [
+      "1. Cache truoc (mien phi, khong danh doi chat luong)",
+      "2. Cat output token (output dat gap ~5x input)",
+      "3. Ha effort tren route khong can (chat, classify, high-volume)",
+      "4. Doi model - CUOI CUNG, va do truoc"
+    ],
+    "warning": "Truoc khi dung cascade nhieu model, DO phuong an don gian hon: model manh nhat o effort THAP hon. Cache la scoped theo model, nen cascade lam mat tai su dung cache giua cac model.",
+    "cacheWarning": "Doi effort giua chung hoi thoai lam mat cache messages (tru per-message effort tren Opus 5 / Fable 5.1)."
+  }
+}

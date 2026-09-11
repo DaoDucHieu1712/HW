@@ -1,6 +1,7 @@
-using FluentValidation;
+﻿using FluentValidation;
+using HW.Agentic.Core;
 using HW.Application.Agents.Dtos;
-using HW.Application.Agents.Workflow;
+using HW.Agentic.Workflow;
 using HW.Application.CQRS;
 
 namespace HW.Application.Agents.Queries;

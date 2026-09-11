@@ -58,8 +58,21 @@ public class OutboxMessageProcessor : BackgroundService
             .ToListAsync(ct);
 
 
+        if (messages.Count > 0)
+            _logger.LogDebug("[Outbox] Dispatching {MessageCount} pending message(s)", messages.Count);
+
         foreach (var message in messages)
         {
+            // The outbox is where a domain event crosses out of the request that raised it, so the
+            // request's correlation id is already gone. The message id takes over as the thread to
+            // pull on: it is on every line below, and consumers publish under the same id.
+            using var messageScope = _logger.BeginScope(new Dictionary<string, object?>
+            {
+                ["OutboxMessageId"] = message.Id,
+                ["OutboxMessageType"] = message.Type,
+                ["OutboxAttempt"] = message.RetryCount + 1
+            });
+
             try
             {
                 var eventType = ResolveType(message.Type);
@@ -99,7 +112,11 @@ public class OutboxMessageProcessor : BackgroundService
                 }
 
                 message.ProcessedOnUtc = DateTimeOffset.UtcNow;
-                _logger.LogInformation("[Outbox] Processed {EventType} -> {Route}", eventType.Name, route);
+                _logger.LogInformation(
+                    "[Outbox] Processed {EventType} -> {Route} (raised {AgeMs} ms earlier)",
+                    eventType.Name,
+                    route,
+                    (long)(DateTimeOffset.UtcNow - message.OccurredOnUtc).TotalMilliseconds);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,5 @@
-using HW.Api.Models;
-using HW.Application.Abstractions.Chat;
+﻿using HW.Api.Models;
+using HW.Agentic.Abstractions.Chat;
 using HW.Application.Agents.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

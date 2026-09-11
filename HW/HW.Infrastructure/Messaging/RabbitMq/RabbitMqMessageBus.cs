@@ -11,12 +11,12 @@ namespace HW.Infrastructure.Messaging.RabbitMq;
 /// Publishes to one durable topic exchange, using the topic name as the routing key.
 ///
 /// <para>
-/// <b>A message published to a topic no queue is bound to is discarded.</b> This is how AMQP
-/// exchanges work and the adapter cannot paper over it — it is the sharpest behavioural difference
-/// from the Kafka adapter, which retains messages whether or not a consumer exists. In practice:
-/// start the consuming service at least once before the publisher, so its queue exists and
-/// accumulates while it is down. A publish confirms successfully in this case; the broker accepted
-/// the message and then had nowhere to route it.
+/// <b>A message published to a topic no queue is bound to is discarded.</b> An AMQP exchange is a
+/// router, not a log: it has nowhere to keep a message it cannot deliver, and the adapter cannot
+/// paper over that. The publish still confirms successfully — the broker accepted the message and
+/// then dropped it — so this failure is silent by construction. In practice: start the consuming
+/// service at least once before anything publishes, so its durable queue exists and accumulates
+/// while the consumer is down.
 /// </para>
 /// </summary>
 internal sealed class RabbitMqMessageBus : IBrokerBus, IAsyncDisposable
@@ -99,8 +99,8 @@ internal sealed class RabbitMqMessageBus : IBrokerBus, IAsyncDisposable
             // all three are set together across this adapter.
             DeliveryMode = DeliveryModes.Persistent,
 
-            // Nothing routes on this; it rides along so Kafka's partition key is not lost when a
-            // message crosses providers, and so operators can see it in the management UI.
+            // Nothing routes on this. IPartitionedMessage's key rides here so it is visible to the
+            // management UI and to tracing tools, which is the whole of what it buys on AMQP.
             CorrelationId = envelope.PartitionKey
         };
 

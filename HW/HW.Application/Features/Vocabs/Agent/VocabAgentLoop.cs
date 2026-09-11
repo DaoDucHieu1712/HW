@@ -1,5 +1,5 @@
-using HW.Application.Abstractions.AI;
-using HW.Application.Agents;
+﻿using HW.Agentic.Abstractions;
+using HW.Agentic.Core;
 using HW.Application.Features.Vocabs.Dtos;
 
 namespace HW.Application.Features.Vocabs.Agent;

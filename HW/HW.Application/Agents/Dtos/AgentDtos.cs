@@ -1,4 +1,5 @@
-using HW.Application.Abstractions.AI;
+﻿using HW.Agentic.Abstractions;
+using HW.Agentic.Core;
 
 namespace HW.Application.Agents.Dtos;
 
@@ -118,17 +119,9 @@ public static class AgentDtos
     public record ProvidersDto(IReadOnlyList<string> Available, IReadOnlyList<string> Unavailable);
 
     /// <summary>
-    /// Parses the provider name a caller sent. Its whole job is the error message: an unrecognised
-    /// name should say what the valid ones are, not fail a model binder somewhere upstream.
+    /// Parses the provider name a caller sent. The parsing itself belongs to the runtime — the
+    /// delegation tools read the same names off model-written JSON — so this is the API's spelling
+    /// of <see cref="LlmProviders.Parse"/> rather than a second copy of the rule.
     /// </summary>
-    public static LlmProvider? ParseProvider(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value)) return null;
-
-        if (Enum.TryParse<LlmProvider>(value, ignoreCase: true, out var provider))
-            return provider;
-
-        throw new ArgumentException(
-            $"Unknown provider '{value}'. Valid providers: {string.Join(", ", Enum.GetNames<LlmProvider>())}.");
-    }
+    public static LlmProvider? ParseProvider(string? value) => LlmProviders.Parse(value);
 }

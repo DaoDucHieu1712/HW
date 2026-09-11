@@ -15,6 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\HW.Agentic\HW.Agentic.csproj" />
 		<ProjectReference Include="..\HW.Domain\HW.Domain.csproj" />
 	</ItemGroup>
 

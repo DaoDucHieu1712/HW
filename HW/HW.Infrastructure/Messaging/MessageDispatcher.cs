@@ -9,7 +9,7 @@ namespace HW.Infrastructure.Messaging;
 /// <summary>What the adapter should do with a message once the dispatcher is done with it.</summary>
 internal enum DispatchOutcome
 {
-    /// <summary>Handled, or unhandleable. Settle it — ack on RabbitMQ, commit on Kafka.</summary>
+    /// <summary>Handled, or unhandleable. Ack it.</summary>
     Complete,
 
     /// <summary>Retries exhausted. Copy it to the dead-letter topic, then settle it.</summary>
@@ -22,16 +22,23 @@ internal enum DispatchOutcome
 /// <summary>
 /// Runs a handler against a message and decides its fate: retry, dead-letter, or done.
 ///
-/// Both adapters delegate here, which is what makes "throwing means retry, N failures means DLQ"
-/// mean the same thing on RabbitMQ and Kafka. The brokers' native retry machinery is deliberately
-/// unused — RabbitMQ's nack-requeue loses the attempt count and spins hot, and Kafka has no
-/// per-message nack at all — so retries are counted in-process, where both can behave identically.
+/// <see cref="RabbitMq.RabbitMqConsumerService"/> delegates every delivery here, which is what gives
+/// "throwing means retry, N failures means <c>{topic}.dlq</c>" a single definition. RabbitMQ's own
+/// retry machinery is deliberately unused: <c>basic.nack</c> with <c>requeue: true</c> puts the
+/// message back with no record of how many times it has been tried, so a permanently failing message
+/// spins as fast as the broker can redeliver it and never reaches a dead-letter queue. Counting
+/// attempts in-process is what makes the backoff and the attempt limit real.
 ///
 /// <para>
-/// The cost of in-process retry is head-of-line blocking: a message retrying for
-/// <c>MaxDeliveryAttempts</c> holds its consumer. On Kafka that stalls the whole partition; on
-/// RabbitMQ it occupies one prefetch slot. This is the intended trade — it preserves ordering and
-/// bounds the retry rate — but it means the backoff schedule should stay short.
+/// The cost is head-of-line blocking: a message retrying for <c>MaxDeliveryAttempts</c> stays
+/// unacknowledged and occupies one of its consumer's <c>PrefetchCount</c> slots for the whole
+/// schedule. That is the intended trade — it bounds the retry rate — but it is why the backoff must
+/// stay well inside the broker's <c>consumer_timeout</c>.
+/// </para>
+///
+/// <para>
+/// Not used under <c>Provider: MassTransit</c>, which brings its own retry filter and
+/// <c>{queue}_error</c> queues; the schedule is mirrored onto it from the same options.
 /// </para>
 /// </summary>
 internal sealed class MessageDispatcher

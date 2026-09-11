@@ -8,7 +8,7 @@ namespace HW.Infrastructure.Messaging.MassTransitAdapter;
 
 /// <summary>
 /// Bridges MassTransit's <see cref="IConsumer{TMessage}"/> to this codebase's
-/// <see cref="IMessageHandler{TMessage}"/>, so handlers written for the hand-rolled adapters run
+/// <see cref="IMessageHandler{TMessage}"/>, so handlers written for the hand-rolled adapter run
 /// unmodified under MassTransit.
 ///
 /// <para>

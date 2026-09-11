@@ -1,0 +1,56 @@
+# MCP server registry. Every server is disabled by default: enable one only
+# after its command/url and credentials exist in this environment.
+mcps:
+  filesystem:
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-filesystem", "."]
+    enabled: false
+
+  github:
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_TOKEN}
+    enabled: false
+
+  jira:
+    transport: http
+    url: http://localhost:9001/mcp
+    enabled: false
+
+  sqlserver:
+    transport: stdio
+    command: uvx
+    args: ["mcp-server-mssql"]
+    env:
+      MSSQL_CONNECTION_STRING: ${SQLSERVER_CONNECTION_STRING}
+    enabled: false
+
+  mongodb:
+    transport: stdio
+    command: npx
+    args: ["-y", "mongodb-mcp-server"]
+    env:
+      MDB_MCP_CONNECTION_STRING: ${MONGODB_CONNECTION_STRING}
+    enabled: false
+
+  redis:
+    transport: stdio
+    command: uvx
+    args: ["mcp-server-redis"]
+    env:
+      REDIS_URL: ${REDIS_URL}
+    enabled: false
+
+  seq:
+    transport: http
+    url: http://localhost:9002/mcp
+    enabled: false
+
+  docker:
+    transport: stdio
+    command: uvx
+    args: ["mcp-server-docker"]
+    enabled: false

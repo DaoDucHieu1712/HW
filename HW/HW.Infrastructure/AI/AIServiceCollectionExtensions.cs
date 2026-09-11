@@ -1,9 +1,7 @@
-using Anthropic;
-using HW.Application.Abstractions.AI;
-using HW.Application.Abstractions.Chat;
-using HW.Application.Abstractions.Development;
-using HW.Application.Abstractions.Diagnostics;
-using HW.Application.Agents;
+using HW.Agentic.Abstractions.Chat;
+using HW.Agentic.Abstractions.Development;
+using HW.Agentic.Abstractions.Diagnostics;
+using HW.Agentic.Core;
 using HW.Application.Agents.Queries;
 using HW.Application.Features.Vocabs.Agent;
 using HW.Infrastructure.Chat;
@@ -12,21 +10,20 @@ using HW.Infrastructure.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace HW.Infrastructure.AI;
 
 public static class AIServiceCollectionExtensions
 {
     /// <summary>
-    /// Wires the whole agent stack: the loop, the agents and workflows, the developer tooling, and
-    /// one adapter per configured LLM provider.
+    /// Wires the whole agent stack for this application: the runtime from <c>HW.Agentic</c>, the
+    /// host-side implementations its tools read through, and this application's own agents.
     ///
     /// <para>
-    /// A provider with no API key is skipped rather than registered and left to fail on first use.
-    /// That way <see cref="IAgentChatClientResolver.Available"/> is the truth about what this
-    /// deployment can call, and a fan-out over three providers on a machine with one key degrades to
-    /// one working branch and two clear errors instead of three confusing ones.
+    /// The split is the point. <c>HW.Agentic</c> knows about loops, tools, and model providers and
+    /// nothing about this domain. Everything this method adds around it — where the workspace root
+    /// is, which buffer holds the SQL trace, where conversations live, which feature agents exist —
+    /// is what makes that generic runtime <i>this</i> application's.
     /// </para>
     /// </summary>
     public static IServiceCollection AddAiAgents(this IServiceCollection services, IConfiguration configuration)
@@ -34,9 +31,8 @@ public static class AIServiceCollectionExtensions
         AddDiagnostics(services, configuration);
         AddWorkspace(services, configuration);
         AddChat(services, configuration);
-        AddProviders(services, configuration);
 
-        services.AddSingleton<IAgentChatClientResolver, AgentChatClientResolver>();
+        services.AddAgentProviders(configuration);
 
         services.AddAgentEngine(options =>
         {
@@ -50,77 +46,6 @@ public static class AIServiceCollectionExtensions
 
         return services;
     }
-
-    private static void AddProviders(IServiceCollection services, IConfiguration configuration)
-    {
-        AddClaude(services, configuration);
-        AddOpenAi(services, configuration);
-        AddGemini(services, configuration);
-    }
-
-    private static void AddClaude(IServiceCollection services, IConfiguration configuration)
-    {
-        services.AddOptions<AnthropicAgentOptions>()
-            .Bind(configuration.GetSection("Anthropic"))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        // The Anthropic SDK reads ANTHROPIC_API_KEY itself, so an empty configured key is not
-        // evidence the provider is unavailable — unlike the two HTTP adapters below.
-        var configured = configuration["Anthropic:ApiKey"];
-        var fromEnvironment = Environment.GetEnvironmentVariable("ANTHROPIC_API_KEY");
-
-        if (string.IsNullOrWhiteSpace(configured) && string.IsNullOrWhiteSpace(fromEnvironment)) return;
-
-        services.AddSingleton(provider =>
-        {
-            var options = provider.GetRequiredService<IOptions<AnthropicAgentOptions>>().Value;
-
-            return string.IsNullOrWhiteSpace(options.ApiKey)
-                ? new AnthropicClient()
-                : new AnthropicClient { ApiKey = options.ApiKey };
-        });
-
-        services.AddScoped<IAgentChatClient, AnthropicAgentChatClient>();
-    }
-
-    private static void AddOpenAi(IServiceCollection services, IConfiguration configuration)
-    {
-        var section = configuration.GetSection("OpenAI");
-
-        services.AddOptions<OpenAiAgentOptions>()
-            .Bind(section)
-            .PostConfigure(options =>
-                options.ApiKey ??= Environment.GetEnvironmentVariable("OPENAI_API_KEY"))
-            .ValidateDataAnnotations();
-
-        if (!HasKey(section["ApiKey"], "OPENAI_API_KEY")) return;
-
-        // A typed HttpClient: the factory owns the handler's lifetime, which is what keeps a
-        // long-lived client from pinning stale DNS.
-        services.AddHttpClient<OpenAiAgentChatClient>();
-        services.AddScoped<IAgentChatClient>(provider => provider.GetRequiredService<OpenAiAgentChatClient>());
-    }
-
-    private static void AddGemini(IServiceCollection services, IConfiguration configuration)
-    {
-        var section = configuration.GetSection("Gemini");
-
-        services.AddOptions<GeminiAgentOptions>()
-            .Bind(section)
-            .PostConfigure(options =>
-                options.ApiKey ??= Environment.GetEnvironmentVariable("GEMINI_API_KEY"))
-            .ValidateDataAnnotations();
-
-        if (!HasKey(section["ApiKey"], "GEMINI_API_KEY")) return;
-
-        services.AddHttpClient<GeminiAgentChatClient>();
-        services.AddScoped<IAgentChatClient>(provider => provider.GetRequiredService<GeminiAgentChatClient>());
-    }
-
-    private static bool HasKey(string? configured, string environmentVariable)
-        => !string.IsNullOrWhiteSpace(configured)
-           || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(environmentVariable));
 
     /// <summary>
     /// The SQL and log buffers, plus the logging provider that fills the second one.

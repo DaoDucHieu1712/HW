@@ -1,0 +1,37 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  plain:
+    format: "%(asctime)s %(levelname)-7s %(name)-28s %(message)s"
+    datefmt: "%H:%M:%S"
+  detailed:
+    format: "%(asctime)s %(levelname)-7s %(name)-28s [%(correlation_id)s] %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: plain
+    stream: ext://sys.stderr
+  file:
+    class: logging.handlers.RotatingFileHandler
+    formatter: plain
+    filename: logs/platform.log
+    maxBytes: 10485760
+    backupCount: 5
+    encoding: utf-8
+
+root:
+  level: INFO
+  handlers: [console, file]
+
+loggers:
+  agent_platform:
+    level: INFO
+    propagate: true
+  httpx:
+    level: WARNING
+  anthropic:
+    level: WARNING
+  chromadb:
+    level: WARNING

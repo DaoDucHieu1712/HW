@@ -3,10 +3,12 @@
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
   </Folder>
+  <Project Path="HW.Agentic/HW.Agentic.csproj" />
   <Project Path="HW.Api/HW.Api.csproj" />
   <Project Path="HW.Application/HW.Application.csproj" />
   <Project Path="HW.CS/HW.CS.csproj" Id="3409024a-69e5-482b-b40c-d8d75345e98e" />
   <Project Path="HW.Domain/HW.Domain.csproj" />
   <Project Path="HW.Infrastructure/HW.Infrastructure.csproj" />
   <Project Path="HW.PCCP/HW.PCCP.csproj" Id="0657cf63-3e9f-467f-9f26-252d8d4b9744" />
+  <Project Path="HW.UnitTests/HW.UnitTests.csproj" />
 </Solution>

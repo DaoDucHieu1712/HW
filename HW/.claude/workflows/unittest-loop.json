@@ -1,0 +1,62 @@
+{
+  "name": "unittest-loop",
+  "description": "Generate unit tests for existing code: pick the seam -> enumerate the cases -> write -> prove the tests catch defects",
+  "pattern": "generator + mutation check (a test going red when the code breaks is the evaluator)",
+  "whenToUse": "Tests are needed for working code: raising coverage, backfilling after a feature, or before a refactor.",
+  "whenNotToUse": "There is a bug with an unknown cause -> use fixbug-loop; the red test is produced there.",
+  "maxTurns": 18,
+  "command": "/gen-test",
+  "skill": "unit-test",
+  "steps": [
+    {
+      "id": "read-harness",
+      "goal": "Reuse the test infrastructure that exists, do not build new",
+      "outputs": ["The harness to be used", "An existing test file read as the template"],
+      "exitCriteria": "HW.UnitTests/TestSupport/ has been read, plus at least the test file nearest the area under test",
+      "note": "There is no Moq/NSubstitute/FluentAssertions in the project. Plain xUnit asserts + hand-written stubs."
+    },
+    {
+      "id": "choose-seam",
+      "goal": "Test through the same door production goes through",
+      "outputs": ["The seam for each unit"],
+      "exitCriteria": "entity -> call directly | handler -> VocabTestHarness | validator -> Validate() | agent tool -> StubSender",
+      "note": "Feeling that you 'need a mock' almost always means you are testing at the wrong seam."
+    },
+    {
+      "id": "enumerate-cases",
+      "goal": "List the cases BEFORE typing code",
+      "outputs": ["Case table across the 4 groups: happy | boundary | error | preservation"],
+      "exitCriteria": "All 4 groups, or an explicit statement of which group was skipped and why",
+      "note": "The 'preservation' group (does what must NOT change actually stay unchanged) is the most often skipped and catches the most bugs."
+    },
+    {
+      "id": "write",
+      "goal": "Write the tests",
+      "agent": "test-writer",
+      "outputs": ["New tests in HW.UnitTests"],
+      "verifier": "dotnet test HW.UnitTests/HW.UnitTests.csproj --nologo -v q",
+      "exitCriteria": "One behaviour per test. The test name is a claim about behaviour. Never assert on a random value.",
+      "note": "test-writer must NOT change production code. A test red because the code is wrong is a FINDING."
+    },
+    {
+      "id": "mutation-check",
+      "goal": "Prove the tests are not decoration",
+      "outputs": ["Evidence: break the production code -> the test goes RED for the right reason -> revert -> GREEN"],
+      "exitCriteria": "Done for at least one important test, or stated plainly that it could not be done",
+      "note": "Skip this step and the whole suite is decoration. Coverage measures which lines RAN, not which behaviour was ASSERTED."
+    },
+    {
+      "id": "verify",
+      "goal": "The whole batch is stable",
+      "agent": "verifier",
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level full",
+      "exitCriteria": "PASS. Randomness involved -> re-run 3 times; red 1 time in 3 is a broken test, not bad luck."
+    }
+  ],
+  "stopConditions": [
+    { "id": "thrashing", "rule": "the same test fails 3 times for the same reason", "enforcedBy": "hooks/loop-progress.ps1",
+      "action": "Pick ONE: change seam | narrow the case | stop and report (red because the CODE is wrong -> hand to /fixbug)" },
+    { "id": "scope-creep", "rule": "editing a file outside HW.UnitTests", "action": "Stop. Record it under 'Red because the code is wrong', do not fix it yourself." },
+    { "id": "max-turns", "rule": "turns >= 18", "enforcedBy": "functions/Task.ps1" }
+  ]
+}

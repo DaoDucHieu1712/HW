@@ -1,0 +1,7 @@
+name: clean_architecture
+version: "1.0"
+description: >-
+  Dependency rule, layer boundaries and where each kind of code belongs in a
+  Domain / Application / Infrastructure / Api solution.
+tags: [architecture, dotnet, design]
+applies_to: [planner, coding, review, documentation, architecture_review]

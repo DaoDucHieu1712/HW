@@ -1,0 +1,28 @@
+{
+  "_README": "Chep thanh .claude/settings.local.json (DA gitignore). Cai dat CA NHAN cho project nay.",
+  "_precedence": "local > shared project > user. List thi MERGE, khong override. Va deny > ask > allow bat ke tang file nao.",
+
+  "env": {
+    "LOOP_QUALITY_GATE": "1",
+    "LOOP_MAX_TURNS": "40"
+  },
+
+  "permissions": {
+    "allow": [
+      "Bash(dotnet run:*)",
+      "Bash(git stash:*)"
+    ]
+  },
+
+  "_agentTeamsNote": "Agent team la tinh nang thu nghiem, MAC DINH TAT. Bat bang hai key duoi (bo dau _ de kich hoat).",
+  "_env_experimental": { "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1" },
+  "_teammateMode": "in-process",
+  "_agentTeamsCaveats": [
+    "Khi bat, mot subagent duoc Claude DAT TEN se khoi chay nhu teammate - team co the hinh thanh ca khi ban khong yeu cau.",
+    "Khong khoi phuc teammate khi /resume (che do in-process).",
+    "Mot team moi phien; KHONG co team long nhau - teammate khong spawn duoc teammate.",
+    "Lead co dinh, khong chuyen quyen duoc.",
+    "Quyen dat luc spawn theo lead, khong dat rieng tung teammate.",
+    "Request cua teammate nam NGOAI nhom TTL cache cua hoi thoai chinh (mac dinh chi giu 5 phut)."
+  ]
+}

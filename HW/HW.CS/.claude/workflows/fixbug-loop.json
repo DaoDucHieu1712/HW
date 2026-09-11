@@ -1,0 +1,56 @@
+{
+  "name": "fixbug-loop",
+  "description": "Sua loi co ky luat: tai hien -> gia thuyet canh tranh -> test do -> sua toi thieu -> kiem chung",
+  "pattern": "evaluator-optimizer (test do la evaluator)",
+  "whenToUse": "Co loi/exception/hanh vi sai chua ro nguyen nhan.",
+  "whenNotToUse": "Da biet chinh xac dong nao sai va cach sua -> sua thang, van viet test.",
+  "maxTurns": 20,
+  "steps": [
+    {
+      "id": "reproduce",
+      "goal": "Chay duoc loi truoc da",
+      "outputs": ["Cach tai hien", "Thong diep loi GOC day du (ca stack trace)"],
+      "exitCriteria": "Tai hien duoc. KHONG tai hien duoc => noi ro; moi ket luan sau do la SUY DOAN va phai dan nhan."
+    },
+    {
+      "id": "hypothesize",
+      "goal": "Chong anchoring bang cach dung nhieu gia thuyet truoc khi dao sau cai nao",
+      "agent": "bug-hunter",
+      "outputs": ["Bang >= 3 gia thuyet canh tranh", "Voi moi cai: 'neu dung thi cai gi KHAC phai dung theo'"],
+      "exitCriteria": "It nhat 3 gia thuyet, moi cai co mot phep thu BAC BO cu the",
+      "note": "Tim bang chung BAC BO, khong tim bang chung ung ho."
+    },
+    {
+      "id": "red-test",
+      "goal": "Bien bug thanh mot test that bai",
+      "outputs": ["Test tai hien bug"],
+      "verifier": "chay test moi -> phai DO",
+      "exitCriteria": "Test DO, va do DUNG ly do bug gay ra. Neu no xanh ngay => chua hieu bug."
+    },
+    {
+      "id": "minimal-fix",
+      "goal": "Sua NGUYEN NHAN, khong sua trieu chung",
+      "agent": "implementer",
+      "outputs": ["Thay doi toi thieu"],
+      "exitCriteria": "Khong refactor kem theo. Them try/catch quanh cho no la GIAU bug, khong phai sua."
+    },
+    {
+      "id": "verify",
+      "goal": "Chung minh da sua",
+      "agent": "verifier",
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level full",
+      "exitCriteria": "Test moi XANH VA test cu khong do them. Ca hai, khong chi cai dau."
+    },
+    {
+      "id": "spread-check",
+      "goal": "Mot bug hiem khi chi co mot cho",
+      "outputs": ["Danh sach cho khac trong repo co cung mau loi (ghi ra, KHONG sua)"],
+      "exitCriteria": "Da grep mau loi tren toan repo"
+    }
+  ],
+  "stopConditions": [
+    { "id": "thrashing", "rule": "cung cach sua that bai 3 lan", "enforcedBy": "hooks/loop-progress.ps1",
+      "action": "Chon MOT: doi gia thuyet | thu hep pham vi tai hien | dung va bao cao" },
+    { "id": "max-turns", "rule": "turns >= 20", "enforcedBy": "functions/Task.ps1" }
+  ]
+}

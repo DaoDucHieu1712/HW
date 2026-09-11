@@ -8,16 +8,25 @@ using HW.Application.Abstractions.Messaging;
 namespace HW.Infrastructure.Messaging;
 
 /// <summary>
-/// The wire format both adapters read and write.
+/// The wire format the RabbitMQ adapter reads and writes, carried as the AMQP message body.
 ///
-/// Keeping one envelope across providers is what lets <c>Messaging:Provider</c> be a deployment
-/// choice: a payload written by the RabbitMQ adapter deserializes unchanged under the Kafka adapter.
 /// It is plain JSON with no CLR type names in the routing path, so non-.NET producers and consumers
-/// can interoperate by agreeing on the topic name alone.
+/// can interoperate by agreeing on the topic name alone — the reason routing keys off
+/// <see cref="Topic"/> and never off <see cref="PayloadType"/>.
+///
+/// <para>
+/// This is <b>not</b> what <c>Provider: MassTransit</c> puts on the wire. MassTransit has its own
+/// envelope and would nest this one inside it; that adapter publishes the message as itself and maps
+/// these fields onto MassTransit's equivalents instead. Two queues written by the two providers are
+/// therefore not interchangeable.
+/// </para>
 /// </summary>
 /// <param name="MessageId">Assigned once at publish; preserved across every redelivery.</param>
 /// <param name="Topic">Logical stream — also the type-resolution key on the consume side.</param>
-/// <param name="PartitionKey">Ordering key, honoured by Kafka only.</param>
+/// <param name="PartitionKey">
+/// Correlation key from <c>IPartitionedMessage</c>, when the publisher set one. Carried for tracing;
+/// it does not affect routing.
+/// </param>
 /// <param name="PublishedAtUtc">Publish-side timestamp.</param>
 /// <param name="Headers">Correlation and tracing data.</param>
 /// <param name="Payload">The message body, held un-deserialized until the target type is known.</param>

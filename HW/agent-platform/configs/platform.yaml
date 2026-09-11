@@ -1,0 +1,69 @@
+# Root configuration. Environment variables override anything set here
+# (see configs/settings.py :: ENV_OVERRIDES).
+environment: development
+
+llm:
+  provider: anthropic
+  # Exact model id -- never append a date suffix.
+  model: claude-sonnet-5
+  fast_model: claude-haiku-4-5
+  max_tokens: 16000
+  # low | medium | high | xhigh | max
+  effort: high
+  thinking: true
+  thinking_display: omitted
+  timeout_seconds: 600
+  max_retries: 2
+  max_tool_iterations: 12
+  dry_run: false
+
+memory:
+  short_term_max_messages: 40
+  long_term_path: .state/long_term.json
+  vector_backend: chroma
+  vector_path: .state/chroma
+  vector_collection: project-knowledge
+  top_k: 5
+
+graph:
+  max_iterations: 3
+  checkpoint_backend: memory
+  checkpoint_path: .state/checkpoints.sqlite
+  human_in_the_loop: false
+  interrupt_before: []
+
+observability:
+  service_name: agent-platform
+  log_level: INFO
+  log_dir: logs
+  json_logs: false
+  traces_enabled: true
+  console_exporter: false
+  otlp_endpoint: null
+
+integrations:
+  jira_base_url: null
+  jira_project: null
+  github_repo: null
+  github_api_url: https://api.github.com
+  seq_base_url: null
+
+workspace:
+  root: .
+  build_command: dotnet build
+  test_command: dotnet test
+  max_file_bytes: 512000
+  allow_writes: true
+  denied_globs:
+    - "**/.git/**"
+    - "**/*.pem"
+    - "**/secrets/**"
+    - "**/*.env"
+
+skills_dir: skills
+prompts_dir: prompts/templates
+
+enabled_plugins:
+  - security_review
+  - performance_review
+  - architecture_review

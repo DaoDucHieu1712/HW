@@ -1,0 +1,56 @@
+{
+  "name": "fixbug-loop",
+  "description": "Disciplined bug fixing: reproduce -> competing hypotheses -> red test -> minimal fix -> verify",
+  "pattern": "evaluator-optimizer (the red test is the evaluator)",
+  "whenToUse": "There is an error/exception/wrong behaviour whose cause is not yet known.",
+  "whenNotToUse": "The exact wrong line and its fix are already known -> fix it directly, still write the test.",
+  "maxTurns": 20,
+  "steps": [
+    {
+      "id": "reproduce",
+      "goal": "Get the failure to happen first",
+      "outputs": ["How to reproduce", "The full ORIGINAL error message (stack trace included)"],
+      "exitCriteria": "Reproduced. NOT reproducible => say so; every conclusion after that is SPECULATION and must be labelled."
+    },
+    {
+      "id": "hypothesize",
+      "goal": "Fight anchoring by holding several hypotheses before digging into any one",
+      "agent": "bug-hunter",
+      "outputs": ["A table of >= 3 competing hypotheses", "For each: 'if true, what ELSE must be true'"],
+      "exitCriteria": "At least 3 hypotheses, each with a concrete DISCONFIRMING check",
+      "note": "Hunt for DISCONFIRMING evidence, not supporting evidence."
+    },
+    {
+      "id": "red-test",
+      "goal": "Turn the bug into a failing test",
+      "outputs": ["A test that reproduces the bug"],
+      "verifier": "run the new test -> it must be RED",
+      "exitCriteria": "The test is RED, and red for exactly the reason the bug causes. Green right away => the bug is not understood yet."
+    },
+    {
+      "id": "minimal-fix",
+      "goal": "Fix the CAUSE, not the symptom",
+      "agent": "implementer",
+      "outputs": ["The minimal change"],
+      "exitCriteria": "No drive-by refactor. Wrapping the blow-up site in try/catch HIDES the bug, it does not fix it."
+    },
+    {
+      "id": "verify",
+      "goal": "Prove it is fixed",
+      "agent": "verifier",
+      "verifier": "powershell -NoProfile -File .claude/functions/Verify.ps1 -Level full",
+      "exitCriteria": "The new test is GREEN AND no additional old tests are red. Both, not just the first."
+    },
+    {
+      "id": "spread-check",
+      "goal": "A bug is rarely in only one place",
+      "outputs": ["List of other places in the repo with the same defect pattern (write them down, DO NOT fix)"],
+      "exitCriteria": "The defect pattern has been grepped across the whole repo"
+    }
+  ],
+  "stopConditions": [
+    { "id": "thrashing", "rule": "the same fix fails 3 times", "enforcedBy": "hooks/loop-progress.ps1",
+      "action": "Pick ONE: change hypothesis | narrow the repro | stop and report" },
+    { "id": "max-turns", "rule": "turns >= 20", "enforcedBy": "functions/Task.ps1" }
+  ]
+}

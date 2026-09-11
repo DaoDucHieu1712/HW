@@ -10,7 +10,7 @@ namespace HW.Infrastructure.Messaging.MassTransitAdapter;
 /// (<c>HW.Application.Messages:VocabReviewed</c>). That would make the topic name — the thing the
 /// <c>[Message]</c> attribute exists to pin down — depend on where the record happens to live, so
 /// moving a namespace would silently repoint the stream. Formatting from the attribute keeps one
-/// naming authority across all three providers.
+/// naming authority across both providers.
 ///
 /// <para>
 /// This aligns the <i>names</i> only. It does not make MassTransit wire-compatible with the
