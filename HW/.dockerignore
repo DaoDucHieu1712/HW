@@ -1,0 +1,14 @@
+# Build context for HW.Api/Dockerfile. Host bin/ and obj/ must stay out: obj/project.assets.json
+# carries Windows paths, and copying it over the container's restore breaks the --no-restore publish.
+**/bin/
+**/obj/
+**/.vs/
+**/logs/
+**/TestResults/
+**/*.user
+.claude/
+.env
+agent-platform/
+HW.UnitTests/
+HW.CS/
+HW.PCCP/

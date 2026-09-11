@@ -1,14 +1,28 @@
-# Infrastructure for HW — everything the API connects to, nothing that is the API.
+# HW and the Agent Platform — the infrastructure they share, plus each of them as an optional container.
 #
 #   docker compose up -d                        MariaDB, Redis and Seq (the default set)
+#   docker compose --profile app up -d          ... plus HW.Api, containerised
 #   docker compose --profile rabbitmq up -d     ... plus RabbitMQ
 #   docker compose --profile all up -d          everything
 #   docker compose down                         stop, keeping data
 #   docker compose down -v                      stop and discard the volumes
 #
-# The API itself stays in the IDE: it is the thing being debugged, and rebuilding an image on
-# every change is a slower loop than F5. Every port below matches what
-# HW.Api/appsettings.Development.json already points at, so nothing needs reconfiguring.
+#   docker compose run --rm agent-platform status                      what the platform wired up
+#   docker compose run --rm agent-platform --dry-run run "/fixbug DEMO-1"   full graph, zero tokens
+#   docker compose run --rm agent-platform run "/fixbug BUG-123"       for real
+#
+# The default set is still infrastructure only: while the API is the thing being debugged, F5 in
+# the IDE is a faster loop than rebuilding an image, and every infrastructure port below matches what
+# HW.Api/appsettings.Development.json points at. The "app" profile is for running HW without an IDE —
+# it publishes on 5080, not 5000, so it can run next to an IDE-hosted instance without a port clash.
+#
+# The schema is not created on startup (Program.cs never calls Migrate). Apply the migrations from
+# the host once MariaDB is healthy — port 3306 is published, so the development connection string works:
+#   dotnet ef database update --project HW.Infrastructure --startup-project HW.Api
+#
+# The agent platform is a CLI, not a server: it runs one command and exits, so drive it with
+# `docker compose run` rather than `up`. It reads agent-platform/.env for credentials (ANTHROPIC_API_KEY,
+# JIRA_*, GITHUB_*); the in-container addresses below override whatever that file says about hosts.
 #
 # RabbitMQ sits behind a profile because "Messaging:Provider" is "None" in development — starting a
 # broker nothing publishes to costs memory for no benefit. Switch the provider to "RabbitMq" or
@@ -63,7 +77,8 @@ services:
 
   # ── Logs ────────────────────────────────────────────────────────────────────────────────
   # Where Serilog ships structured events. http://localhost:5341 serves both the UI and the
-  # ingestion endpoint — the address in the "Seq" configuration section.
+  # ingestion endpoint — the address in the "Seq" configuration section. Inside the compose
+  # network the same server is http://seq, which is what both containers below are given.
   seq:
     image: datalust/seq:latest
     container_name: hw-seq
@@ -110,8 +125,86 @@ services:
       retries: 5
       start_period: 30s
 
+  # ── HW API ──────────────────────────────────────────────────────────────────────────────
+  # The same Development configuration the IDE runs, with every "localhost" swapped for the
+  # compose service name. Configuration keys use the double-underscore form ASP.NET Core maps
+  # onto the ":" hierarchy, so appsettings.Development.json itself is left untouched.
+  hw-api:
+    build:
+      context: .
+      dockerfile: HW.Api/Dockerfile
+    image: hw-api:dev
+    container_name: hw-api
+    restart: unless-stopped
+    profiles: ["app", "all"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "server=mariadb;port=3306;database=hw;User=root;Password="
+      Cache__RedisConnection: "redis:6379"
+      Seq__ServerUrl: "http://seq"
+      Messaging__RabbitMq__HostName: rabbitmq
+      # The code-reading agents discover the root by walking up to a solution file, which a
+      # published image does not have; the repository is mounted here instead.
+      Workspace__Root: /workspace
+      # Passed through from the shell (or a .env next to this file) when set, absent otherwise —
+      # the SDKs read these variables themselves, so a key never has to enter appsettings.
+      ANTHROPIC_API_KEY:
+      OPENAI_API_KEY:
+      GEMINI_API_KEY:
+    ports:
+      - "${HW_API_PORT:-5080}:8080"   # http://localhost:5080/swagger
+    volumes:
+      # Read-write on purpose: the patch agents apply proposals to the source tree, exactly as they
+      # do when the API runs from the IDE.
+      - .:/workspace
+      - hw-api-logs:/app/logs
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      seq:
+        condition: service_started
+
+  # ── Agent Platform ──────────────────────────────────────────────────────────────────────
+  # Python + the .NET SDK in one image, because the agents' build and test tools shell out to
+  # `dotnet build` / `dotnet test` against the mounted repository. The whole git repository is
+  # mounted (its root is one level above this file) so the VCS tools can see .git; the agents'
+  # workspace is the solution folder inside it.
+  agent-platform:
+    build:
+      context: ./agent-platform
+    image: hw-agent-platform:dev
+    container_name: hw-agent-platform
+    profiles: ["agent", "all"]
+    restart: "no"
+    env_file:
+      - path: agent-platform/.env
+        required: false
+    environment:
+      AGENT_WORKSPACE_ROOT: /repo/HW
+      SEQ_BASE_URL: "http://seq"
+      REDIS_URL: "redis://redis:6379"
+    volumes:
+      - ..:/repo
+      # Checkpoints, long-term memory and the Chroma index outlive a `run --rm`.
+      - agent-state:/app/.state
+      - agent-logs:/app/logs
+      # Every run would otherwise restore the solution's packages from nothing.
+      - nuget-packages:/root/.nuget/packages
+    depends_on:
+      seq:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
 volumes:
   mariadb-data:
   redis-data:
   seq-data:
   rabbitmq-data:
+  hw-api-logs:
+  agent-state:
+  agent-logs:
+  nuget-packages:
